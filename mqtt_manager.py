@@ -6,7 +6,7 @@ class MQTTManager:
     def __init__(self):
         self.mqttClient = None
 
-    def createClient(self):
+    def create_client(self):
         self.mqttClient = MQTTClient()
         self.mqttClient.connect()
 

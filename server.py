@@ -20,11 +20,8 @@ def hello():
 
 if __name__ == '__main__':
 
-    # mqttClient = MQTTClient()
-    # mqttClient.connect()
-
     mqttManager = MQTTManager()
-    mqttManager.createClient()
+    mqttManager.create_client()
     mqttManager.run()
 
     server = pywsgi.WSGIServer(('0.0.0.0', 8083), app, handler_class=WebSocketHandler)
