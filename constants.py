@@ -1,7 +1,15 @@
+import yaml
+
 class Constants:
     LOOP_DELAY = 0.01
-    # MQTT_BROKER = "192.168.12.160"
-    MQTT_BROKER = "broker.shiftr.io"
-    # MQTT_PING_TOPIC = "wsn/check"
-    MQTT_PING_TOPIC = None
-    MQTT_SUB_TOPICS = ["wsn/#"]
+
+    conf = None
+    @staticmethod
+    def load():
+        with open("config/config.yaml", 'r') as stream:
+            try:
+                conf = yaml.load(stream)
+                print(conf)
+                Constants.conf = conf
+            except yaml.YAMLError as exc:
+                print(exc)
