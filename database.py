@@ -52,6 +52,7 @@ class Database:
         try:
 
             sql = 'select * from sensor_data where sensor_id=%s and chan=%s limit %s'
+
             self.cur.execute(sql, (id, chan, limit))
 
             results = self.cur.fetchall()
