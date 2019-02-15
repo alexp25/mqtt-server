@@ -5,12 +5,16 @@ MQTT_BROKER: "broker.shiftr.io"
 # MQTT_BROKER = "192.168.1.150"
 # MQTT_PING_TOPIC = "wsn/check"
 MQTT_PING_TOPIC: None
-MQTT_SUB_TOPICS: ["wsn/gas/#", "wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
-#MQTT_SUB_TOPICS: ["wsn/gas/#"]
+MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
 ENABLE_DB: True
 LOG_SENSOR_DATA: True
 DB:
-  HOST: '192.168.1.150'
+  HOST: 'localhost'
+  USER: 'pi'
+  PASS: 'raspberry'
+  NAME: 'mqtt_charts'
+DB1:
+  HOST: '192.168.12.160'
   USER: 'pi'
   PASS: 'raspberry'
   NAME: 'mqtt_charts'

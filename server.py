@@ -82,7 +82,7 @@ def get_sensor_data_csv():
 
         # .encode("utf-8")
         for (i, row) in enumerate(data):
-            strIO.write((str(i) + ", " + str(row["value"])  + ", " + str(row["timestamp"]) + "\n").encode("utf-8"))
+            strIO.write((str(i+1) + "\t" + str(row["value"])  + "\t" + str(row["timestamp"]) + "\n").encode("utf-8"))
 
         # strIO.write(data)
         strIO.seek(0)

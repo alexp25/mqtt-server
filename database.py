@@ -51,7 +51,7 @@ class Database:
     def get_sensor_data(self, id, chan, limit):
         try:
 
-            sql = 'select * from sensor_data where sensor_id=%s and chan=%s limit %s'
+            sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
 
             self.cur.execute(sql, (id, chan, limit))
 
