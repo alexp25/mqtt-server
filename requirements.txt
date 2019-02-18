@@ -4,3 +4,5 @@ pyyaml
 gevent
 gevent-websocket
 matplotlib
+cairocffi
+mpld3
