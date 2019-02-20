@@ -76,6 +76,7 @@ def get_sensor_data_csv():
         id = request.args.get('id')
         chan = request.args.get('chan')
         limit = request.args.get('limit')
+        file = request.args.get('file')
         data = db.get_sensor_data(id, chan, limit)
         # create a dynamic csv or file here using `StringIO`
         # (instead of writing to the file system)
@@ -86,17 +87,26 @@ def get_sensor_data_csv():
         # .encode("utf-8")
         timeseries = Timeseries()
         for (i, row) in enumerate(data):
-            strIO.write((str(i+1) + "\t" + str(row["value"])  + "\t" + str(row["timestamp"]) + "\n").encode("utf-8"))
+            strIO.write((str(i+1) + "\t" + str(row["value"])  + "\t" + str(row["timestamp"]) + "\r\n").encode("utf-8"))
             timeseries.x.append(row["timestamp"])
             timeseries.y.append(row["value"])
-        graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
+        # graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
 
         # strIO.write(data)
         strIO.seek(0)
-        return send_file(strIO,
-                         mimetype='text/csv',
-                         attachment_filename='downloadFile.csv',
-                         as_attachment=True)
+
+        if file:
+            return send_file(strIO,
+                             mimetype='text/csv',
+                             attachment_filename='downloadFile.csv',
+                             as_attachment=True)
+        else:
+            # assume bytes_io is a `BytesIO` object
+            byte_str = strIO.read()
+
+            # Convert to a "unicode" object
+            text_obj = byte_str.decode('UTF-8')  # Or use the encoding you expect
+            return text_obj
     except:
         Utils.print_exception("")
         return json.dumps({
@@ -111,12 +121,39 @@ def get_sensor_data_plot():
         chan = request.args.get('chan')
         limit = request.args.get('limit')
         data = db.get_sensor_data(id, chan, limit)
-        timeseries = Timeseries()
-        for (i, row) in enumerate(data):
-            timeseries.x.append(row["timestamp"])
-            timeseries.y.append(row["value"])
-        html = graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
-        return html
+
+
+        if not chan:
+            timeseries = []
+            for i in range(len(data)):
+                timeseries1 = Timeseries()
+                timeseries1.x = []
+                timeseries1.y = []
+
+                for (i, row) in enumerate(data):
+                    timeseries1.x.append(row["timestamp"])
+                    timeseries1.y.append(row["value"])
+
+                timeseries.append(timeseries1)
+
+            strIO = graph.plot_timeseries_multi(timeseries, "sensor " + id, "time", "value")
+        else:
+            timeseries = Timeseries()
+            timeseries.x = []
+            timeseries.y = []
+            for (i, row) in enumerate(data):
+                timeseries.x.append(row["timestamp"])
+                timeseries.y.append(row["value"])
+            strIO = graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
+
+        return strIO
+        # print(strIO)
+        # # attachment_filename = 'plot.png',
+        # # as_attachment = True
+        # return send_file(strIO,
+        #                  mimetype='image/jpg',
+        #                  attachment_filename='logo.png',
+        #                  )
     except:
         Utils.print_exception("")
         return json.dumps({
