@@ -14,23 +14,25 @@ class Database:
     def connect(self):
         print("connecting to db")
         try:
-            # self.conn = psycopg2.connect(
-            #     host='192.168.1.150',
-            #     user='pi',
-            #     password='raspberry',
-            #     dbname='mqtt_charts')
+            dbconf = Constants.conf["DB"]
+            dbconf_dev = Constants.conf["DB_DEV"]
 
-            # self.conn = psycopg2.connect(
-            #     host='localhost',
-            #     user='pi',
-            #     password='raspberry',
-            #     dbname='mqtt_charts')
+            host = dbconf["HOST"]
+            user = dbconf["USER"]
+            password = dbconf["PASS"]
+            dbname = dbconf["NAME"]
+
+            if Constants.conf["DEV"]:
+                host = dbconf_dev["HOST"]
+                user = dbconf_dev["USER"]
+                password = dbconf_dev["PASS"]
+                dbname = dbconf_dev["NAME"]
 
             self.conn = psycopg2.connect(
-                host=Constants.conf["DB"]["HOST"],
-                user=Constants.conf["DB"]["USER"],
-                password=Constants.conf["DB"]["PASS"],
-                dbname=Constants.conf["DB"]["NAME"])
+                host=host,
+                user=user,
+                password=password,
+                dbname=dbname)
 
             self.cur = self.conn.cursor(cursor_factory=RealDictCursor)
             print("connected to db")
@@ -50,13 +52,9 @@ class Database:
 
     def get_sensor_data(self, id, chan, limit):
         try:
-
             sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
-
             self.cur.execute(sql, (id, chan, limit))
-
             results = self.cur.fetchall()
-
             return results
         except:
             Utils.print_exception(self.__class__.__name__)
@@ -65,18 +63,14 @@ class Database:
     def create_sensor(self, sensor):
         try:
             sdata = MQTTMessage(sensor.current_data)
-
             print(sdata.__dict__)
             if not sdata:
                 return None
             self.cur.execute('select * from topic where name=%s', (sdata.topic,))
-
             topic = self.cur.fetchone()
             print(topic)
             # print(topic["id"])
-
             sensor.id = Utils.get_sensor_id_encoding(sensor.id, topic["id"])
-
             sql = "INSERT INTO sensor(sensor_id, n_chan, log_rate, flag1, topic_id) VALUES(%s, %s, %s, %s, %s)"
             sensor.n_channel = topic["n_chan"]
             sensor.log_rate = topic["log_rate"]
@@ -86,7 +80,6 @@ class Database:
             self.conn.commit()
             # close communication with the database
             # self.cur.close()
-
             return sensor
         except:
             Utils.print_exception(self.__class__.__name__)
@@ -111,7 +104,6 @@ class Database:
                 # for index, d in enumerate(msg1.data):
                 #     insert_list.append((sensor_id, index, d))
                 # print(msg1.data)
-
                 # insert all data channels that are defined for the sensor type
                 for index in index_data:
                     if index < len(msg1.data):

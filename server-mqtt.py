@@ -180,7 +180,11 @@ if __name__ == '__main__':
         db.connect()
         mqtt_manager.load_sensors()
 
-    port = 8083
+    if Constants.conf["DEV"]:
+        port = Constants.conf["PORT_DEV"]
+    else:
+        port = Constants.conf["PORT"]
+
     print("server starting on port " + str(port))
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()
