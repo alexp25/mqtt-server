@@ -12,7 +12,7 @@ class MQTTClient:
         # broker_address = "192.168.12.1"
         # broker_address="iot.eclipse.org" #use external broker
         # self.broker_address = "127.0.0.1"
-        self.broker_address = Constants.conf["MQTT_BROKER"]
+        self.broker_address = Constants.conf["ENV"]["MQTT_BROKER"]
         self.client = None
         self.sensor_data_q = Queue()
 
@@ -24,8 +24,8 @@ class MQTTClient:
             self.client.loop_stop()
 
     def ping(self, data):
-        if Constants.conf["MQTT_PING_TOPIC"] is not None:
-            self.client.publish(Constants.conf["MQTT_PING_TOPIC"], payload=data, qos=0, retain=False)
+        if Constants.conf["ENV"]["MQTT_PING_TOPIC"] is not None:
+            self.client.publish(Constants.conf["ENV"]["MQTT_PING_TOPIC"], payload=data, qos=0, retain=False)
 
     def connect(self):
         def on_message(client, userdata, message):
@@ -78,7 +78,7 @@ class MQTTClient:
 
         print("subscribing to wsn")
 
-        for topic in Constants.conf["MQTT_SUB_TOPICS"]:
+        for topic in Constants.conf["ENV"]["MQTT_SUB_TOPICS"]:
             self.client.subscribe(topic=topic, qos=0)
 
 

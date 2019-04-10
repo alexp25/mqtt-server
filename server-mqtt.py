@@ -174,16 +174,13 @@ if __name__ == '__main__':
     mqtt_manager.create_client()
     mqtt_manager.start()
 
-    if Constants.conf["ENABLE_DB"]:
+    if Constants.conf["ENV"]["ENABLE_DB"]:
         print("enable db")
         db = Database.instance()
         db.connect()
         mqtt_manager.load_sensors()
 
-    if Constants.conf["DEV"]:
-        port = Constants.conf["PORT_DEV"]
-    else:
-        port = Constants.conf["PORT"]
+    port = Constants.conf["ENV"]["PORT"]
 
     print("server starting on port " + str(port))
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)

@@ -110,14 +110,14 @@ class MQTTManager(Thread):
 
 
     def create_sensor(self, sensor):
-        if Constants.conf["ENABLE_DB"]:
+        if Constants.conf["ENV"]["ENABLE_DB"]:
             return self.db.create_sensor(sensor)
         else:
             return None
 
     def log_sensor_data(self, sensor):
         s = Sensor(sensor)
-        if Constants.conf["ENABLE_DB"]:
+        if Constants.conf["ENV"]["ENABLE_DB"]:
             self.db.publish_sensor_data(sensor=s)
 
     def run(self):
@@ -133,7 +133,7 @@ class MQTTManager(Thread):
                 if not self.sensor_data_q.empty():
                     recv = MQTTMessage(self.sensor_data_q.get(block=False))
                     self.update_sensor_data(recv.id, recv)
-                    if Constants.conf["LOG_SENSOR_DATA"]:
+                    if Constants.conf["ENV"]["LOG_SENSOR_DATA"]:
                         print(recv.topic, recv.id, recv.data)
 
             except:

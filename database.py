@@ -14,19 +14,11 @@ class Database:
     def connect(self):
         print("connecting to db")
         try:
-            dbconf = Constants.conf["DB"]
-            dbconf_dev = Constants.conf["DB_DEV"]
-
+            dbconf = Constants.conf["ENV"]["DB"]
             host = dbconf["HOST"]
             user = dbconf["USER"]
             password = dbconf["PASS"]
             dbname = dbconf["NAME"]
-
-            if Constants.conf["DEV"]:
-                host = dbconf_dev["HOST"]
-                user = dbconf_dev["USER"]
-                password = dbconf_dev["PASS"]
-                dbname = dbconf_dev["NAME"]
 
             self.conn = psycopg2.connect(
                 host=host,
