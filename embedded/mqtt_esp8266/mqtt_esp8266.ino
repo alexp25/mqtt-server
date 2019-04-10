@@ -4,7 +4,8 @@
 #include "mqtt_io.h"
 //#include "def_test.h"
 //#include "def_ws.h"
-#include "def_ws.h"
+//#include "def_ws.h"
+#include "def_ws_outdoor.h"
 //#include "def_gas_sensor.h"
 // #include "def_blank_sensor.h"
 

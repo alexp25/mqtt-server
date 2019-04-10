@@ -1,0 +1,35 @@
+
+LOOP_DELAY: 0.01
+# MQTT_BROKER = "192.168.12.160"
+MQTT_BROKER: "broker.shiftr.io"
+# MQTT_BROKER = "192.168.1.150"
+# MQTT_PING_TOPIC = "wsn/check"
+MQTT_PING_TOPIC: None
+MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
+ENABLE_DB: True
+LOG_SENSOR_DATA: True
+DEV: False
+DB:
+  HOST: 'localhost'
+  USER: 'pi'
+  PASS: 'raspberry'
+  NAME: 'mqtt_charts'
+DB_DEV:
+  HOST: 'localhost'
+  USER: 'pi'
+  PASS: 'raspberry'
+  NAME: 'mqtt_charts_dev'
+DB_RPI:
+  HOST: '192.168.12.160'
+  USER: 'pi'
+  PASS: 'raspberry'
+  NAME: 'mqtt_charts'
+PORT: 8083
+PORT_DEV: 8183
+
+
+  # self.conn = psycopg2.connect(
+  #     host='localhost',
+  #     user='pi',
+  #     password='raspberry',
+  #     dbname='mqtt_charts')

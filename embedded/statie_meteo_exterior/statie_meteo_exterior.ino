@@ -14,11 +14,11 @@ CustomSoftwareSerial* customSerial;
 
 #define STATION_ID 0xA1
 
-#define RESP_MSG_LEN 20
+#define RESP_MSG_LEN 30
 #define REQ_MSG_LEN 7
 
 uint8_t enable_time = 0, enable_file = 0;
-#define DATA_LEN 5
+#define DATA_LEN 8
 
 uint8_t req_msg[REQ_MSG_LEN] = {STATION_ID, 0x6F, 0, 0, DATA_LEN, 0, 7};
 
@@ -78,7 +78,7 @@ void check_rx(boolean wait = false) {
       }
     }
 
-    Serial.println((char*)resp_msg);
+//    Serial.println((char*)resp_msg);
     parse_msg();
 
     uint32_t t1_recv = millis();
@@ -147,7 +147,7 @@ void parse_msg() {
   char msgbuf[10];
   if (resp_msg[0] == STATION_ID && resp_msg[1] == 0x6F) {
     strcpy(msg, "data,");
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < DATA_LEN; i++) {
       measurements[i] = (long)resp_msg[2 + i * 2] * 256 + resp_msg[2 + i * 2 + 1];
       sprintf(msgbuf, "%ld,", measurements[i]);
       strcat(msg, msgbuf);

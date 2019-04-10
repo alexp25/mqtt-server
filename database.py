@@ -34,23 +34,27 @@ class Database:
     def get_sensors(self):
         try:
             self.cur.execute('select sensor.sensor_id, sensor.n_chan, sensor.log_rate, sensor.flag1, sensor.topic_id, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_id=topic.id')
-
             results = self.cur.fetchall()
-
+            self.conn.commit()
             return results
         except:
             Utils.print_exception(self.__class__.__name__)
             return None
+        finally:
+            self.conn.commit()
 
     def get_sensor_data(self, id, chan, limit):
         try:
             sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
             self.cur.execute(sql, (id, chan, limit))
             results = self.cur.fetchall()
+            self.conn.commit()
             return results
         except:
             Utils.print_exception(self.__class__.__name__)
             return None
+        finally:
+            self.conn.commit()
 
     def create_sensor(self, sensor):
         try:
@@ -76,6 +80,8 @@ class Database:
         except:
             Utils.print_exception(self.__class__.__name__)
             return None
+        finally:
+            self.conn.commit()
 
 
     def publish_sensor_data(self, sensor):
@@ -109,3 +115,5 @@ class Database:
             # self.cur.close()
         except:
             Utils.print_exception(self.__class__.__name__)
+        finally:
+            self.conn.commit()
