@@ -6,3 +6,5 @@ gevent-websocket
 matplotlib
 cairocffi
 mpld3
+mysql-connector
+pymysql

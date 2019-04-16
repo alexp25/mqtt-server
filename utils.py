@@ -54,6 +54,7 @@ class Utils:
         print(msg1)
 
     @staticmethod
-    def get_sensor_id_encoding(id, topic_id):
-        id = topic_id * 1000 + id
+    def get_sensor_id_encoding(id, topic_code):
+        print("get sensor id: ", id, topic_code)
+        id = topic_code * 1000 + id
         return id

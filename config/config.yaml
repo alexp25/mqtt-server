@@ -11,10 +11,11 @@ ENV:
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
     DB:
+      TYPE: "MYSQL"
       HOST: 'localhost'
-      USER: 'pi'
-      PASS: 'raspberry'
-      NAME: 'mqtt_charts_dev'
+      USER: 'root'
+      PASS: 'safacembani!'
+      NAME: 'mqtt_charts_dv'
   PROD:
     PORT: 8083
     ENABLE_DB: True
@@ -23,9 +24,10 @@ ENV:
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
     DB:
+      TYPE: "MYSQL"
       HOST: 'localhost'
-      USER: 'pi'
-      PASS: 'raspberry'
+      USER: 'root'
+      PASS: 'safacembani!'
       NAME: 'mqtt_charts'
   RPI:
     PORT: 8083
@@ -35,6 +37,7 @@ ENV:
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
     DB:
+      TYPE: "POSTGRESQL"
       HOST: '192.168.12.160'
       USER: 'pi'
       PASS: 'raspberry'

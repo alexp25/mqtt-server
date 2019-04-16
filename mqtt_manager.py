@@ -40,7 +40,7 @@ class MQTTManager(Thread):
                     s1.n_channel = s["n_chan"]
                     s1.log_rate = s["log_rate"]
                     s1.flag1 = s["flag1"]
-                    s1.topic_id = s["topic_id"]
+                    s1.topic_code = s["topic_code"]
                     s1.type = s["sensor_type_code"]
                     s1.ts = t_create
                     s1.log_ts = t_create
@@ -63,7 +63,7 @@ class MQTTManager(Thread):
             for s in self.sensors:
                 s1 = Sensor(s)
                 s1_update = s
-                if s1.id == Utils.get_sensor_id_encoding(id, s1.topic_id):
+                if s1.id == Utils.get_sensor_id_encoding(id, s1.topic_code):
                     found = True
                     # print("found")
                     break

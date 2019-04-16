@@ -25,7 +25,7 @@ class Sensor:
     def __init__(self, orig=None):
         self.id = ""
         self.type = 0
-        self.topic_id = 0
+        self.topic_code = 0
         self.n_channel = 0
         self.log_rate = 0
         self.flag1 = False
@@ -42,7 +42,7 @@ class Sensor:
     def copy_constructor(self, orig):
         self.id = orig.id
         self.type = orig.type
-        self.topic_id = orig.topic_id
+        self.topic_code = orig.topic_code
         self.n_channel = orig.n_channel
         self.log_rate = orig.log_rate
         self.data_buffer = orig.data_buffer
