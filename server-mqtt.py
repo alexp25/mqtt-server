@@ -121,7 +121,7 @@ def get_sensor_data_plot():
         chan = request.args.get('chan')
         limit = request.args.get('limit')
         data = db.get_sensor_data(id, chan, limit)
-
+        # print(data)
 
         if not chan:
             timeseries = []
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     if Constants.conf["ENV"]["ENABLE_DB"]:
         print("enable db")
         db = Database.instance()
-        db.connect()
+        # db.connect()
         mqtt_manager.load_sensors()
 
     port = Constants.conf["ENV"]["PORT"]

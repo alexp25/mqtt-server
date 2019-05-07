@@ -56,9 +56,12 @@ class Database:
         except:
             Utils.print_exception(self.__class__.__name__)
 
+    def check_connect(self):
+        if not (self.connected and self.conn.is_connected()):
+            self.connect()
+
     def get_sensors(self):
-        if not self.connected:
-            return None
+        self.check_connect()
 
         try:
             self.cur.execute('select sensor.sensor_id, sensor.n_chan, sensor.log_rate, sensor.flag1, sensor.topic_code, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_code=topic.code')
@@ -72,12 +75,14 @@ class Database:
             self.conn.commit()
 
     def get_sensor_data(self, id, chan, limit):
-        if not self.connected:
-            return None
+        self.check_connect()
 
         try:
             sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
-            self.cur.execute(sql, (id, chan, limit))
+            params = (int(id), int(chan), int(limit))
+            print(sql)
+            print(params)
+            self.cur.execute(sql, params)
             results = self.cur.fetchall()
             self.conn.commit()
             return results
@@ -88,8 +93,7 @@ class Database:
             self.conn.commit()
 
     def create_sensor(self, sensor):
-        if not self.connected:
-            return None
+        self.check_connect()
 
         try:
             sdata = MQTTMessage(sensor.current_data)
@@ -119,10 +123,8 @@ class Database:
         finally:
             self.conn.commit()
 
-
     def publish_sensor_data(self, sensor):
-        if not self.connected:
-            return None
+        self.check_connect()
 
         sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
         print("publish data")
