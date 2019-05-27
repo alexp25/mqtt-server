@@ -8,6 +8,8 @@ import time
 from utils import Utils
 from classes import Sensor
 import json
+import datetime
+from logg import Logg
 
 
 class MQTTManager(Thread):
@@ -20,6 +22,7 @@ class MQTTManager(Thread):
         self.default_log_rate = 20
         # the sampling time of the sensor (it may send data faster than this, so just ignore the data in between)
         self.default_min_sampling_rate = 10
+        self.logg = Logg.instance()
 
     def create_client(self):
         self.mqtt_client = MQTTClient()
@@ -27,11 +30,11 @@ class MQTTManager(Thread):
         self.sensor_data_q = self.mqtt_client.get_data_q()
 
     def load_sensors(self):
-        print("load sensors")
+        self.logg.log("load sensors")
         try:
             self.db = Database.instance()
             sensors = self.db.get_sensors()
-            print(sensors)
+            self.logg.log(sensors)
             t_create = time.time()
             if sensors is not None:
                 for s in sensors:
@@ -45,10 +48,10 @@ class MQTTManager(Thread):
                     s1.ts = t_create
                     s1.log_ts = t_create
 
-                    # print(json.dumps(s1.__dict__))
+                    # self.logg.log(json.dumps(s1.__dict__))
 
                     self.sensors.append(s1)
-            print(self.sensors)
+            self.logg.log(self.sensors)
         except:
             Utils.print_exception("")
 
@@ -65,7 +68,7 @@ class MQTTManager(Thread):
                 s1_update = s
                 if s1.id == Utils.get_sensor_id_encoding(id, s1.topic_code):
                     found = True
-                    # print("found")
+                    # self.logg.log("found")
                     break
             if found:
                 # for real time monitor
@@ -76,12 +79,12 @@ class MQTTManager(Thread):
 
                 # handle sample and db log
                 if ts - s1.ts >= s1.log_rate:
-                    # print("sample")
+                    # self.logg.log("sample")
                     s1_update.ts = ts
                     s1.data_buffer.append(data)
 
                 if ts - s1.log_ts >= self.default_log_rate:
-                    # print("log")
+                    # self.logg.log("log")
                     s1_update.log_ts = ts
                     if len(s1.data_buffer) > 0:
                         self.log_sensor_data(s1)
@@ -89,7 +92,7 @@ class MQTTManager(Thread):
             else:
                 # sensor is not defined in the db, save and use defaults
                 # assign to the topic (should be defined)
-                print("create sensor")
+                self.logg.log("create sensor")
                 s1.current_data = data
                 s1.id = id
                 s1.n_channel = len(d1.data)
@@ -106,7 +109,7 @@ class MQTTManager(Thread):
         except:
             Utils.print_exception(self.__class__.__name__)
 
-        # print(self.sensors)
+        # self.logg.log(self.sensors)
 
 
     def create_sensor(self, sensor):
@@ -126,15 +129,21 @@ class MQTTManager(Thread):
             time.sleep(Constants.LOOP_DELAY)
             t1 = time.time()
             try:
+
                 if (t1 - t0) >= 10:
                     t0 = t1
+                    self.logg.log("self test")
+                    if not self.mqtt_client.connected:
+                        self.logg.log("disconnect detected, reconnect")
+                        self.mqtt_client.connect()
                     self.mqtt_client.ping("self test")
+
 
                 if not self.sensor_data_q.empty():
                     recv = MQTTMessage(self.sensor_data_q.get(block=False))
                     self.update_sensor_data(recv.id, recv)
                     if Constants.conf["ENV"]["LOG_SENSOR_DATA"]:
-                        print(recv.topic, recv.id, recv.data)
+                        self.logg.log(recv.topic + " " + str(recv.id) + " " + str(recv.data))
 
             except:
                 Utils.print_exception(self.__class__.__name__)

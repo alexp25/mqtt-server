@@ -14,6 +14,8 @@ import json
 
 from graph import Graph, Timeseries
 
+from logg import Logg
+
 # tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 # static_folder = "dist"
 # app = Flask(__name__,static_folder=static_folder, template_folder=tmpl_dir)
@@ -81,7 +83,7 @@ def get_sensor_data_csv():
         # create a dynamic csv or file here using `StringIO`
         # (instead of writing to the file system)
 
-        print(data)
+        Utils.log(data)
         strIO = io.BytesIO()
 
         # .encode("utf-8")
@@ -121,7 +123,7 @@ def get_sensor_data_plot():
         chan = request.args.get('chan')
         limit = request.args.get('limit')
         data = db.get_sensor_data(id, chan, limit)
-        # print(data)
+        # Utils.log(data)
 
         if not chan:
             timeseries = []
@@ -147,7 +149,7 @@ def get_sensor_data_plot():
             strIO = graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
 
         return strIO
-        # print(strIO)
+        # Utils.log(strIO)
         # # attachment_filename = 'plot.png',
         # # as_attachment = True
         # return send_file(strIO,
@@ -167,7 +169,10 @@ def get_sensor_data_plot():
 if __name__ == '__main__':
 
     Constants.load()
-    print("config loaded")
+    Utils.log("config loaded")
+
+    logg = Logg.instance()
+    logg.start()
 
     mqtt_manager = MQTTManager()
 
@@ -175,13 +180,13 @@ if __name__ == '__main__':
     mqtt_manager.start()
 
     if Constants.conf["ENV"]["ENABLE_DB"]:
-        print("enable db")
+        Utils.log("enable db")
         db = Database.instance()
         # db.connect()
         mqtt_manager.load_sensors()
 
     port = Constants.conf["ENV"]["PORT"]
 
-    print("server starting on port " + str(port))
+    Utils.log("server starting on port " + str(port))
     server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()

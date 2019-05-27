@@ -6,6 +6,7 @@ from multiprocessing import Queue
 from utils import Utils
 from datetime import datetime
 from classes import MQTTMessage
+from logg import Logg
 
 class MQTTClient:
     def __init__(self):
@@ -15,6 +16,8 @@ class MQTTClient:
         self.broker_address = Constants.conf["ENV"]["MQTT_BROKER"]
         self.client = None
         self.sensor_data_q = Queue()
+        self.connected = False
+        self.logg = Logg.instance()
 
     def get_data_q(self):
         return self.sensor_data_q
@@ -28,13 +31,21 @@ class MQTTClient:
             self.client.publish(Constants.conf["ENV"]["MQTT_PING_TOPIC"], payload=data, qos=0, retain=False)
 
     def connect(self):
+        def on_connect(client, userdata, flags, rc):
+            self.logg.log("client: " + str(client) + " connected")
+            self.connected = True
+
+        def on_disconnect(client, userdata, rc):
+            self.logg.log("client: " + str(client) + " disconnected")
+            self.connected = False
+
         def on_message(client, userdata, message):
             try:
-                # print("message received, topic: ", message.topic, ", message: ", str(message.payload.decode("utf-8")))
-                # print("client: ", client)
-                # print("message topic =", message.topic)
-                # print("message qos =", message.qos)
-                # print("message retain flag =", message.retain)
+                # self.logg.log("message received, topic: ", message.topic, ", message: ", str(message.payload.decode("utf-8")))
+                # self.logg.log("client: ", client)
+                # self.logg.log("message topic =", message.topic)
+                # self.logg.log("message qos =", message.qos)
+                # self.logg.log("message retain flag =", message.retain)
 
                 raw_data = str(message.payload.decode("utf-8"))
                 msg = MQTTMessage()
@@ -45,7 +56,7 @@ class MQTTClient:
                 msg.data = raw_data.split(",")
 
                 msg.topic = "/".join(topic_elems[0:n_topic_elems-2])
-                # print(msg.topic)
+                # self.logg.log(msg.topic)
 
                 # the last-1 item is the sensor id
                 # the last item is the input/output selector (cmd, sns)
@@ -63,20 +74,22 @@ class MQTTClient:
             except:
                 Utils.print_exception(self.__class__.__name__)
 
-        print("creating new instance")
+        self.logg.log("creating new instance")
 
         self.client = mqttClient.Client(client_id="pc", clean_session=True, userdata=None,
                                    protocol=mqtt.client.MQTTv311, transport="tcp")
 
         self.client.username_pw_set("60c42070", "87bc58e655e88d7f")
         self.client.on_message = on_message  # attach function to callback
+        self.client.on_connect = on_connect
+        self.client.on_disconnect = on_disconnect
 
-        print("connecting to broker")
+        self.logg.log("connecting to broker")
         self.client.connect(self.broker_address, port=1883, keepalive=60, bind_address="")
 
         self.client.loop_start()  # start the loop
 
-        print("subscribing to wsn")
+        self.logg.log("subscribing to wsn")
 
         for topic in Constants.conf["ENV"]["MQTT_SUB_TOPICS"]:
             self.client.subscribe(topic=topic, qos=0)

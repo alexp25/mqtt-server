@@ -1,4 +1,5 @@
 import sys
+from threading import Thread
 
 
 class Singleton:
@@ -55,6 +56,10 @@ class Utils:
 
     @staticmethod
     def get_sensor_id_encoding(id, topic_code):
-        print("get sensor id: ", id, topic_code)
+        # print("get sensor id: ", id, topic_code)
         id = topic_code * 1000 + id
         return id
+
+    @staticmethod
+    def log(msg):
+        print(msg)
