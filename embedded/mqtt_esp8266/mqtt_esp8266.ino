@@ -1,11 +1,11 @@
 #include <ESP8266WiFi.h>
 #include <MQTTClient.h>
 
-#include "mqtt_io.h"
+//#include "mqtt_io.h"
 //#include "def_test.h"
+#include "def_ws_1.h"
 //#include "def_ws.h"
-//#include "def_ws.h"
-#include "def_ws_outdoor.h"
+//#include "def_ws_outdoor.h"
 //#include "def_gas_sensor.h"
 // #include "def_blank_sensor.h"
 

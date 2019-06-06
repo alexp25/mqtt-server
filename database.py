@@ -57,7 +57,7 @@ class Database:
             self.connected = True
             self.logg.log("connected to db")
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
 
     def check_connect(self):
         if not (self.connected and self.conn.is_connected()):
@@ -72,7 +72,7 @@ class Database:
             self.conn.commit()
             return results
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
             return None
         finally:
             self.conn.commit()
@@ -90,7 +90,7 @@ class Database:
             self.conn.commit()
             return results
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
             return None
         finally:
             self.conn.commit()
@@ -121,7 +121,7 @@ class Database:
             # self.cur.close()
             return sensor
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
             return None
         finally:
             self.conn.commit()
@@ -159,6 +159,6 @@ class Database:
             # close communication with the database
             # self.cur.close()
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
         finally:
             self.conn.commit()

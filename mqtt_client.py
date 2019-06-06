@@ -72,7 +72,7 @@ class MQTTClient:
                 if not self.sensor_data_q.full():
                     self.sensor_data_q.put(msg)
             except:
-                Utils.print_exception(self.__class__.__name__)
+                self.logg.log(Utils.format_exception(self.__class__.__name__))
 
         self.logg.log("creating new instance")
 

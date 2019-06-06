@@ -53,7 +53,7 @@ class MQTTManager(Thread):
                     self.sensors.append(s1)
             self.logg.log(self.sensors)
         except:
-            Utils.print_exception("")
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
 
     def update_sensor_data(self, id, data):
         ts = time.time()
@@ -107,7 +107,7 @@ class MQTTManager(Thread):
 
 
         except:
-            Utils.print_exception(self.__class__.__name__)
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
 
         # self.logg.log(self.sensors)
 
@@ -146,6 +146,6 @@ class MQTTManager(Thread):
                         self.logg.log(recv.topic + " " + str(recv.id) + " " + str(recv.data))
 
             except:
-                Utils.print_exception(self.__class__.__name__)
+                self.logg.log(Utils.format_exception(self.__class__.__name__))
 
 

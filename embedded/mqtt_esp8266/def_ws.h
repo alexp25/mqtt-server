@@ -1,4 +1,4 @@
-const char* nodeId = "station_0";
+const char* nodeId = "station_3";
 const char* topicOut = "wsn/indoor_ws/0/sns";
 const char* topicIn = "wsn/indoor_ws/0/cmd";
 //const char* ssid     = "TP-LINK_70E4";

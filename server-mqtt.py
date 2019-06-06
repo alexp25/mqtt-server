@@ -25,6 +25,7 @@ app.debug = False
 db = None
 
 graph = Graph.instance()
+logg = Logg.instance()
 
 
 @app.route("/")
@@ -51,7 +52,7 @@ def get_sensors():
         data = db.get_sensors()
         return json.dumps(data)
     except:
-        Utils.print_exception("")
+        logg.log(Utils.format_exception(""))
         return json.dumps({
             "status": False
         })
@@ -67,7 +68,7 @@ def get_sensor_data():
         data = db.get_sensor_data(id, chan, limit)
         return json.dumps(data, indent=4, sort_keys=True, default=str)
     except:
-        Utils.print_exception("")
+        logg.log(Utils.format_exception(""))
         return json.dumps({
             "status": False
         })
@@ -110,7 +111,7 @@ def get_sensor_data_csv():
             text_obj = byte_str.decode('UTF-8')  # Or use the encoding you expect
             return text_obj
     except:
-        Utils.print_exception("")
+        logg.log(Utils.format_exception(""))
         return json.dumps({
             "status": False
         })
@@ -157,7 +158,7 @@ def get_sensor_data_plot():
         #                  attachment_filename='logo.png',
         #                  )
     except:
-        Utils.print_exception("")
+        logg.log(Utils.format_exception(""))
         return json.dumps({
             "status": False
         })
