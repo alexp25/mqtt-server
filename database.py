@@ -105,7 +105,7 @@ class Database:
                 return None
             self.cur.execute('select * from topic where name=%s', (sdata.topic,))
             topic = self.cur.fetchone()
-            self.logg.log("topic: ", topic)
+            self.logg.log("topic: " + str(topic))
             # self.logg.log(topic["id"])
             sensor.id = Utils.get_sensor_id_encoding(sensor.id, topic["code"])
             sql = "INSERT INTO sensor (sensor_id, n_chan, log_rate, flag1, topic_code) VALUES (%s, %s, %s, %s, %s)"
@@ -113,7 +113,7 @@ class Database:
             sensor.log_rate = topic["log_rate"]
             sensor.flag1 = topic["flag1"]
             params = (sensor.id, sensor.n_channel, sensor.log_rate, sensor.flag1, topic["code"])
-            self.logg.log(sql, params)
+            self.logg.log(sql + str(params))
             self.cur.execute(sql, params)
             # commit the changes to the database
             self.conn.commit()
@@ -147,9 +147,10 @@ class Database:
                 #     insert_list.append((sensor_id, index, d))
                 # self.logg.log(msg1.data)
                 # insert all data channels that are defined for the sensor type
-                for index in index_data:
-                    if index < len(msg1.data):
-                        insert_list.append((s.id, index, int(msg1.data[index]), msg1.ts))
+                if (not s.flag1) or (s.flag1 and msg1.data[0] == "data"):
+                    for index in index_data:
+                        if index < len(msg1.data):
+                            insert_list.append((s.id, index, int(msg1.data[index]), msg1.ts))
 
             # self.logg.log(insert_list)
             self.cur.executemany(sql, insert_list)

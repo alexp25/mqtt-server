@@ -113,7 +113,7 @@ int init_filter = 1;
 int index_filter = 0;
 
 void filter_measurements(long* filtered, long* measurements, long* measurements_counter, int len, int n_filter) {
- 
+
   if (init_filter == 1) {
     for (int i = 0; i < len; i++) {
       filtered[i] = measurements[i];
@@ -209,6 +209,7 @@ void loop()
   if ((t1 - t0_recv_timeout >= 3000) || recv_flag) {
     digitalWrite(13, 0);
     if (!recv_flag) {
+      Serial.println("info, timeout");
       delay(1000);
     }
     recv_flag = 0;
