@@ -112,6 +112,9 @@ class Database:
             sensor.n_channel = topic["n_chan"]
             sensor.log_rate = topic["log_rate"]
             sensor.flag1 = topic["flag1"]
+            sensor.topic_code = topic["code"]
+
+            self.logg.log("sensor: " + str(sensor.__dict__))
             params = (sensor.id, sensor.n_channel, sensor.log_rate, sensor.flag1, topic["code"])
             self.logg.log(sql + str(params))
             self.cur.execute(sql, params)

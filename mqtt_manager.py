@@ -100,9 +100,12 @@ class MQTTManager(Thread):
                 s1.log_rate = self.default_log_rate
                 s1.ts = ts
                 s1.log_ts = ts
+
                 # write to db
                 s1 = self.create_sensor(s1)
+
                 if s1 is not None:
+                    self.logg.log("new sensor: " + str(s1.__dict__))
                     self.sensors.append(s1)
 
 
