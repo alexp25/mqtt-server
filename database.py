@@ -150,7 +150,11 @@ class Database:
                 if (not s.flag1) or (s.flag1 and msg1.data[0] == "data"):
                     for index in index_data:
                         if index < len(msg1.data):
-                            insert_list.append((s.id, index, int(msg1.data[index]), msg1.ts))
+                            try:
+                                data_val = int(msg1.data[index])
+                                insert_list.append((s.id, index, data_val, msg1.ts))
+                            except:
+                                continue
 
             # self.logg.log(insert_list)
             self.cur.executemany(sql, insert_list)
