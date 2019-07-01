@@ -138,7 +138,10 @@ class MQTTManager(Thread):
                     self.logg.log("self test")
                     if not self.mqtt_client.connected:
                         self.logg.log("disconnect detected, reconnect")
-                        self.mqtt_client.connect()
+                        try:
+                            self.mqtt_client.connect()
+                        except:
+                            self.logg.log(Utils.format_exception(self.__class__.__name__))
                     self.mqtt_client.ping("self test")
 
 

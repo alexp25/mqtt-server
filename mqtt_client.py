@@ -38,6 +38,11 @@ class MQTTClient:
         def on_disconnect(client, userdata, rc):
             self.logg.log("client: " + str(client) + " disconnected")
             self.connected = False
+            try:
+                if self.client:
+                    self.client.loop_stop()
+            except:
+                self.logg.log(Utils.format_exception(self.__class__.__name__))
 
         def on_message(client, userdata, message):
             try:
