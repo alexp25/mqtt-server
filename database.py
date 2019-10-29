@@ -103,9 +103,9 @@ class Database:
             # self.logg.log(sdata.__dict__)
             if not sdata:
                 return None
-            self.cur.execute('select * from topic where name=%s', (sdata.topic,))
+            self.cur.execute('select * from topic where name=%s', (sensor.topic,))
             topic = self.cur.fetchone()
-            self.logg.log("topic: " + str(topic))
+            self.logg.log("topic[" + str(sensor.topic) + "]: " + str(topic))
             # self.logg.log(topic["id"])
             sensor.id = Utils.get_sensor_id_encoding(sensor.id, topic["code"])
             sql = "INSERT INTO sensor (sensor_id, n_chan, log_rate, flag1, topic_code) VALUES (%s, %s, %s, %s, %s)"
