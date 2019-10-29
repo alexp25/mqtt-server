@@ -10,6 +10,7 @@ ENV:
     MQTT_BROKER: "broker.shiftr.io"
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
+    EXT_API_LOG_INIT: False
     EXT_API:
       - ENDPOINT: "https://airapi.airly.eu/v2/measurements/point"
         ENABLED: True
@@ -32,6 +33,22 @@ ENV:
           TOPIC: "ext/air/1"
         OUTPUT:
           - KEY: ["current", "indexes", 0, "value"]
+      - ENDPOINT: "http://api.waqi.info/feed/bucharest/"
+        ENABLED: True
+        PARAMS:
+          - KEY: "token"
+            VALUE: "66d9a11121d73df5702af7579cf8c11a62d52f50"
+          - KEY: "city"
+            VALUE: "bucharest"
+        SENSOR:
+          ID: 2
+          FULL_ID: 4002
+          TYPE: 4
+          LOG_RATE: 3600
+          NC: 1
+          TOPIC: "ext/air/1"
+        OUTPUT:
+          - KEY: ["data", "aqi"]
       - ENDPOINT: "http://api.airvisual.com/v2/nearest_city"
         ENABLED: True
         PARAMS:
@@ -69,6 +86,7 @@ ENV:
     MQTT_BROKER: "broker.shiftr.io"
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
+    EXT_API_LOG_INIT: False
     EXT_API:
       - ENDPOINT: "https://airapi.airly.eu/v2/measurements/point"
         ENABLED: True
@@ -91,6 +109,22 @@ ENV:
           TOPIC: "ext/air/1"
         OUTPUT:
           - KEY: ["current", "indexes", 0, "value"]
+      - ENDPOINT: "http://api.waqi.info/feed/bucharest/"
+        ENABLED: True
+        PARAMS:
+          - KEY: "token"
+            VALUE: "66d9a11121d73df5702af7579cf8c11a62d52f50"
+          - KEY: "city"
+            VALUE: "bucharest"
+        SENSOR:
+          ID: 2
+          FULL_ID: 4002
+          TYPE: 4
+          LOG_RATE: 3600
+          NC: 1
+          TOPIC: "ext/air/1"
+        OUTPUT:
+          - KEY: ["data", "aqi"]
       - ENDPOINT: "http://api.airvisual.com/v2/nearest_city"
         ENABLED: True
         PARAMS:

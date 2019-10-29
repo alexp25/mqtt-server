@@ -25,6 +25,7 @@ class ExtApi(Thread):
 
     def connect(self):
         self.ext_apis = Constants.conf["ENV"]["EXT_API"]
+        self.logstart = Constants.conf["ENV"]["EXT_API_LOG_INIT"]
         print(self.ext_apis)
         self.db = Database.instance()
         sensors = self.db.get_sensors()
@@ -161,4 +162,4 @@ if __name__ == '__main__':
     test = ExtApi.instance()
     print("requesting data")
     test.connect()
-    # test.request_data()
+    test.request_data()
