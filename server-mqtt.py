@@ -16,6 +16,8 @@ from graph import Graph, Timeseries
 
 from logg import Logg
 
+from extapi import ExtApi
+
 # tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 # static_folder = "dist"
 # app = Flask(__name__,static_folder=static_folder, template_folder=tmpl_dir)
@@ -26,6 +28,7 @@ db = None
 
 graph = Graph.instance()
 logg = Logg.instance()
+extapi = ExtApi.instance()
 
 
 @app.route("/")
@@ -164,9 +167,6 @@ def get_sensor_data_plot():
         })
 
 
-
-
-
 if __name__ == '__main__':
 
     Constants.load()
@@ -185,6 +185,9 @@ if __name__ == '__main__':
         db = Database.instance()
         # db.connect()
         mqtt_manager.load_sensors()
+
+    extapi.connect()
+    extapi.start()
 
     port = Constants.conf["ENV"]["PORT"]
 

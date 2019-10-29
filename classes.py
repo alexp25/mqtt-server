@@ -19,8 +19,6 @@ class MQTTMessage:
         self.data = orig.data
         self.ts = orig.ts
 
-
-
 class Sensor:
     def __init__(self, orig=None):
         self.id = ""

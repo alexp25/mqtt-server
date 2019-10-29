@@ -133,7 +133,8 @@ class Database:
         self.check_connect()
 
         sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
-        self.logg.log("publish data")
+        # self.logg.log("publish data")
+        print(sql)
         s = Sensor(sensor)
         self.logg.log(s.__dict__)
         try:
@@ -159,6 +160,7 @@ class Database:
                             except:
                                 continue
 
+            # print(insert_list)
             # self.logg.log(insert_list)
             self.cur.executemany(sql, insert_list)
             # commit the changes to the database
