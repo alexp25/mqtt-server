@@ -1,2 +1,2 @@
-call py -3.6 -m pip install -r requirements.txt
+call py -3 -m pip install -r requirements.txt
 pause

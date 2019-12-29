@@ -10,6 +10,7 @@ from classes import Sensor
 import json
 import datetime
 from logg import Logg
+from typing import List
 
 
 class MQTTManager(Thread):
@@ -17,7 +18,7 @@ class MQTTManager(Thread):
         Thread.__init__(self)
         self.mqtt_client = None
         self.sensor_data_q = None
-        self.sensors = []
+        self.sensors: List[Sensor] = []
         # the actual write to db sampling time
         self.default_log_rate = 20
         # the sampling time of the sensor (it may send data faster than this, so just ignore the data in between)
@@ -38,50 +39,54 @@ class MQTTManager(Thread):
             t_create = time.time()
             if sensors is not None:
                 for s in sensors:
-                    s1 = Sensor()
+                    s1: Sensor = Sensor()
                     s1.id = s["sensor_id"]
-                    s1.n_channel = s["n_chan"]
                     s1.log_rate = s["log_rate"]
-                    s1.flag1 = s["flag1"]
+                    s1.topic_name = s["topic_name"]
                     s1.topic_code = s["topic_code"]
                     s1.type = s["sensor_type_code"]
                     s1.ts = t_create
                     s1.log_ts = t_create
-
                     # self.logg.log(json.dumps(s1.__dict__))
-
                     self.sensors.append(s1)
+
             self.logg.log(self.sensors)
         except:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
 
-    def update_sensor_data(self, id, data):
+    def update_sensor_data(self, raw_id, d1: MQTTMessage):
         ts = time.time()
         found = False
         s1 = Sensor()
         s1_update = None
-        d1 = MQTTMessage(data)
+
+        # remove heading
+        data = d1.data
+        if d1.data[0] == "data":
+            data = d1.data[1:]
+
+        d1.data = data
 
         try:
             for s in self.sensors:
-                s1 = Sensor(s)
+                s1 = s
                 s1_update = s
-                if s1.id == Utils.get_sensor_id_encoding(id, s1.topic_code):
+                if s1.id == Utils.get_sensor_id_encoding(raw_id, s1.topic_code):
                     found = True
                     # self.logg.log("found")
                     break
-            if found:
-                # for real time monitor
-                if s1.flag1 and data.data[0] != "data":
-                    return
 
+            if found:
+                # print(d1)
+                # for real time monitor
+                
                 s1.current_data = data
 
                 # handle sample and db log
                 if ts - s1.ts >= s1.log_rate:
                     # self.logg.log("sample")
                     s1_update.ts = ts
-                    s1.data_buffer.append(data)
+                    s1.data_buffer.append(d1)
 
                 if ts - s1.log_ts >= self.default_log_rate:
                     # self.logg.log("log")
@@ -93,21 +98,22 @@ class MQTTManager(Thread):
                 # sensor is not defined in the db, save and use defaults
                 # assign to the topic (should be defined)
                 self.logg.log("create sensor")
-                s1.current_data = data
-                s1.id = id
-                s1.n_channel = len(d1.data)
+                s1.current_data = d1
+                s1.raw_id = raw_id
                 s1.type = d1.type
                 s1.log_rate = self.default_log_rate
                 s1.ts = ts
                 s1.log_ts = ts
+                s1.topic_name = d1.topic
 
                 # write to db
                 s1 = self.create_sensor(s1)
 
+                # topic code is now assigned
+
                 if s1 is not None:
                     self.logg.log("new sensor: " + str(s1.__dict__))
                     self.sensors.append(s1)
-
 
         except:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
@@ -124,7 +130,7 @@ class MQTTManager(Thread):
     def log_sensor_data(self, sensor):
         s = Sensor(sensor)
         if Constants.conf["ENV"]["ENABLE_DB"]:
-            self.db.publish_sensor_data(sensor=s)
+            self.db.publish_sensor_data(s)
 
     def run(self):
         t0 = time.time()
@@ -146,7 +152,7 @@ class MQTTManager(Thread):
 
 
                 if not self.sensor_data_q.empty():
-                    recv = MQTTMessage(self.sensor_data_q.get(block=False))
+                    recv: MQTTMessage = self.sensor_data_q.get(block=False)
                     self.update_sensor_data(recv.id, recv)
                     if Constants.conf["ENV"]["LOG_SENSOR_DATA"]:
                         self.logg.log(recv.topic + " " + str(recv.id) + " " + str(recv.data))

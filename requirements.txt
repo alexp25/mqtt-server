@@ -9,3 +9,4 @@ mpld3
 mysql-connector
 pymysql
 requests
+Flask

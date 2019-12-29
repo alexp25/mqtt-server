@@ -6,8 +6,6 @@ from classes import Sensor
 from constants import Constants
 import mysql.connector
 import pymysql
-import MySQLdb
-import MySQLdb.cursors
 
 from logg import Logg
 
@@ -67,7 +65,7 @@ class Database:
         self.check_connect()
 
         try:
-            self.cur.execute('select sensor.sensor_id, sensor.n_chan, sensor.log_rate, sensor.flag1, sensor.topic_code, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_code=topic.code')
+            self.cur.execute('select sensor.sensor_id, sensor.log_rate, sensor.topic_code, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_code=topic.code')
             results = self.cur.fetchall()
             self.conn.commit()
             return results
@@ -99,23 +97,23 @@ class Database:
         self.check_connect()
 
         try:
-            sdata = MQTTMessage(sensor.current_data)
+            sdata: MQTTMessage = sensor.current_data
             # self.logg.log(sdata.__dict__)
             if not sdata:
                 return None
-            self.cur.execute('select * from topic where name=%s', (sensor.topic,))
+
+            self.logg.log("create sensor for topic: " + sensor.topic_name + " (code " + str(sensor.topic_code) + ")")
+            self.cur.execute('select * from topic where name=%s', (sensor.topic_name,))
             topic = self.cur.fetchone()
-            self.logg.log("topic[" + str(sensor.topic) + "]: " + str(topic))
+            self.logg.log("topic[" + str(sensor.topic_name) + "]: " + str(topic))
             # self.logg.log(topic["id"])
-            sensor.id = Utils.get_sensor_id_encoding(sensor.id, topic["code"])
-            sql = "INSERT INTO sensor (sensor_id, n_chan, log_rate, flag1, topic_code) VALUES (%s, %s, %s, %s, %s)"
-            sensor.n_channel = topic["n_chan"]
+            sensor.id = Utils.get_sensor_id_encoding(sensor.raw_id, topic["code"])
+            sql = "INSERT INTO sensor (sensor_id, log_rate, topic_code) VALUES (%s, %s, %s)"
             sensor.log_rate = topic["log_rate"]
-            sensor.flag1 = topic["flag1"]
             sensor.topic_code = topic["code"]
 
             self.logg.log("sensor: " + str(sensor.__dict__))
-            params = (sensor.id, sensor.n_channel, sensor.log_rate, sensor.flag1, topic["code"])
+            params = (sensor.id, sensor.log_rate, topic["code"])
             self.logg.log(sql + str(params))
             self.cur.execute(sql, params)
             # commit the changes to the database
@@ -129,44 +127,40 @@ class Database:
         finally:
             self.conn.commit()
 
-    def publish_sensor_data(self, sensor):
+    def publish_sensor_data(self, s: Sensor):
         self.check_connect()
 
         sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
-        # self.logg.log("publish data")
-        print(sql)
-        s = Sensor(sensor)
+        self.logg.log("publish data")
+
         self.logg.log(s.__dict__)
         try:
             insert_list = []
-            n_data = s.n_channel
-            if s.flag1:
-                index_data = range(1, n_data+1)
+
+            for msg in s.data_buffer:   
+
+                n_data = len(msg.data)
+                r = range(0, n_data)
+
+                for index in r:
+                    try:
+                        data_val = int(msg.data[index])
+                        insert_list.append((s.id, index, data_val, msg.ts))
+                    except:
+                        self.logg.log(Utils.format_exception(self.__class__.__name__))
+                        continue
+
+            if len(insert_list) > 0:
+                # print(insert_list)
+                self.logg.log(insert_list)
+                self.cur.executemany(sql, insert_list)
+                # commit the changes to the database
+                self.conn.commit()
+                # close communication with the database
+                # self.cur.close()
             else:
-                index_data = range(0, n_data)
-
-            for msg in s.data_buffer:
-                msg1 = MQTTMessage(msg)
-                # for index, d in enumerate(msg1.data):
-                #     insert_list.append((sensor_id, index, d))
-                # self.logg.log(msg1.data)
-                # insert all data channels that are defined for the sensor type
-                if (not s.flag1) or (s.flag1 and msg1.data[0] == "data"):
-                    for index in index_data:
-                        if index < len(msg1.data):
-                            try:
-                                data_val = int(msg1.data[index])
-                                insert_list.append((s.id, index, data_val, msg1.ts))
-                            except:
-                                continue
-
-            # print(insert_list)
-            # self.logg.log(insert_list)
-            self.cur.executemany(sql, insert_list)
-            # commit the changes to the database
-            self.conn.commit()
-            # close communication with the database
-            # self.cur.close()
+                self.logg.log("no data to insert: " + str(len(s.data_buffer)))
+            
         except:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
         finally:

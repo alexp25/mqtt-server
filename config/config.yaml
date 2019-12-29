@@ -28,7 +28,7 @@ ENV:
           ID: 1
           FULL_ID: 4001
           TYPE: 4
-          LOG_RATE: 3600
+          LOG_RATE: 1800
           NC: 1
           TOPIC: "ext/air/1"
         OUTPUT:
@@ -44,7 +44,7 @@ ENV:
           ID: 2
           FULL_ID: 4002
           TYPE: 4
-          LOG_RATE: 3600
+          LOG_RATE: 1800
           NC: 1
           TOPIC: "ext/air/1"
         OUTPUT:
@@ -55,14 +55,14 @@ ENV:
           - KEY: "key"
             VALUE: "kFHKw8oi3K56wzRhN"
           - KEY: "lat"
-            VALUE: 44.4567471
+            VALUE: 44.435051
           - KEY: "lon"
-            VALUE: 26.080335
+            VALUE: 26.0473631
         SENSOR:
           ID: 1
           FULL_ID: 3001
           TYPE: 3
-          LOG_RATE: 3600
+          LOG_RATE: 1800
           NC: 2
           TOPIC: "ext/air/2"
         OUTPUT:
@@ -75,10 +75,14 @@ ENV:
             LIN: [0.6613, -10.07]
     DB:
       TYPE: "MYSQL"
-      HOST: 'localhost'
-      USER: 'root'
-      PASS: 'safacembani!'
-      NAME: 'mqtt_charts_dv'
+      # HOST: 'localhost'
+      # USER: 'root'
+      # PASS: 'safacembani!'
+      # NAME: 'mqtt_charts_dv'
+      HOST: '192.168.1.150'
+      USER: 'pi'
+      PASS: 'raspberry'
+      NAME: 'mqtt_charts'
   PROD:
     PORT: 8083
     ENABLE_DB: True
@@ -94,9 +98,9 @@ ENV:
           - KEY: "indexType"
             VALUE: "AIRLY_CAQI"
           - KEY: "lat"
-            VALUE: 44.4567471
+            VALUE: 44.435051
           - KEY: "lng"
-            VALUE: 26.080335
+            VALUE: 26.0473631
         HEADERS:
           - KEY: "apiKey"
             VALUE: "CSCpT2iBwJvqsAnts1C6dMQc76gIWWXP"
@@ -131,9 +135,9 @@ ENV:
           - KEY: "key"
             VALUE: "kFHKw8oi3K56wzRhN"
           - KEY: "lat"
-            VALUE: 44.4567471
+            VALUE: 44.435051
           - KEY: "lon"
-            VALUE: 26.080335
+            VALUE: 26.0473631
         SENSOR:
           ID: 1
           FULL_ID: 3001

@@ -1,1 +1,1 @@
-py -3.6 server-mqtt.py
+py -3 server-mqtt.py
