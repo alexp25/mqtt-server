@@ -1,13 +1,13 @@
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from utils import Utils, Singleton
-from classes import MQTTMessage
-from classes import Sensor
-from constants import Constants
-import mysql.connector
+
+from modules.utils import Utils, Singleton
+from modules.classes import MQTTMessage
+from modules.classes import Sensor
+from modules.constants import Constants
+
+import pymysql.cursors
 import pymysql
 
-from logg import Logg
+from modules.logg import Logg
 
 
 @Singleton
@@ -31,24 +31,15 @@ class Database:
             dbtype = dbconf["TYPE"]
 
             if dbtype == "MYSQL":
-                self.conn = mysql.connector.connect(
+                self.conn = pymysql.connect(
                     host=host,
                     user=user,
                     password=password,
                     database=dbname,
-                    # cursorclass=MySQLdb.cursors.DictCursor
-                    # cursorclass=pymysql.cursors.DictCursor
+                    cursorclass=pymysql.cursors.DictCursor
                 )
                 # self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
-                self.cur = self.conn.cursor(dictionary=True)
-            elif dbtype == "POSTGRESQL":
-                self.conn = psycopg2.connect(
-                    host=host,
-                    user=user,
-                    password=password,
-                    dbname=dbname
-                )
-                self.cur = self.conn.cursor(cursor_factory=RealDictCursor)
+                self.cur = self.conn.cursor()
             else:
                 pass        
            
@@ -58,7 +49,7 @@ class Database:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
 
     def check_connect(self):
-        if not (self.connected and self.conn.is_connected()):
+        if not self.connected:
             self.connect()
 
     def get_sensors(self):

@@ -16,7 +16,6 @@ cd home/pi/Desktop/mqtt-server
 #	sudo python hello_gevent.py
 #fi
 
-# sudo pip3.6 install -r requirements.txt
-sudo python3.6 server-mqtt.py
+sudo pip3.6 install -r requirements.txt
 cd /
 #deactivate

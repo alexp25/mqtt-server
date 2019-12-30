@@ -3,7 +3,7 @@ import yaml
 class Constants:
     LOOP_DELAY = 0.01
 
-    conf = None
+    conf = {}
     @staticmethod
     def load():
         with open("config/config.yaml", 'r') as stream:

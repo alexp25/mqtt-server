@@ -1,9 +1,9 @@
 import time
 import datetime
 from threading import Thread
-from utils import Singleton
+from modules.utils import Singleton
 from multiprocessing import Queue
-from utils import Utils
+from modules.utils import Utils
 
 
 @Singleton

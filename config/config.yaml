@@ -4,7 +4,7 @@ ENV_NAME: "DEV"
 
 ENV:
   DEV:
-    PORT: 8183
+    PORT: 8200
     ENABLE_DB: True
     LOG_SENSOR_DATA: True
     MQTT_BROKER: "broker.shiftr.io"
@@ -84,7 +84,7 @@ ENV:
       PASS: 'raspberry'
       NAME: 'mqtt_charts'
   PROD:
-    PORT: 8083
+    PORT: 8300
     ENABLE_DB: True
     LOG_SENSOR_DATA: False
     MQTT_BROKER: "broker.shiftr.io"

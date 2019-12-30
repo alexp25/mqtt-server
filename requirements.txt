@@ -1,12 +1,11 @@
 paho-mqtt
-psycopg2
 pyyaml
 gevent
 gevent-websocket
+cython
 matplotlib
 cairocffi
 mpld3
-mysql-connector
 pymysql
 requests
 Flask

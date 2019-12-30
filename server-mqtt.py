@@ -3,20 +3,20 @@ from flask import Flask, request, send_file
 from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler
 
-from mqtt_client import MQTTClient
-from mqtt_manager import MQTTManager
-from database import Database
-from constants import Constants
-from utils import Utils
+from modules.mqtt_client import MQTTClient
+from modules.mqtt_manager import MQTTManager
+from modules.database import Database
+from modules.constants import Constants
+from modules.utils import Utils
 
 import io
 import json
 
-from graph import Graph, Timeseries
+from modules.graph import Graph, Timeseries
 
-from logg import Logg
+from modules.logg import Logg
 
-from extapi import ExtApi
+from modules.extapi import ExtApi
 
 # tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 # static_folder = "dist"

@@ -1,12 +1,12 @@
 import paho.mqtt.client as mqttClient
 import paho.mqtt as mqtt
 import time
-from constants import Constants
+from modules.constants import Constants
 from multiprocessing import Queue
-from utils import Utils
+from modules.utils import Utils
 from datetime import datetime
-from classes import MQTTMessage
-from logg import Logg
+from modules.classes import MQTTMessage
+from modules.logg import Logg
 
 class MQTTClient:
     def __init__(self):

@@ -1,15 +1,15 @@
 import time
-from constants import Constants
-from mqtt_client import MQTTClient, MQTTMessage
+from modules.constants import Constants
+from modules.mqtt_client import MQTTClient, MQTTMessage
 from threading import Thread
 from multiprocessing import Queue
-from database import Database
+from modules.database import Database
 import time
-from utils import Utils
-from classes import Sensor
+from modules.utils import Utils
+from modules.classes import Sensor
 import json
 import datetime
-from logg import Logg
+from modules.logg import Logg
 from typing import List
 
 

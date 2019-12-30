@@ -1,18 +1,18 @@
 
 import time
-from constants import Constants
+from modules.constants import Constants
 from threading import Thread
 from multiprocessing import Queue
-from database import Database
+from modules.database import Database
 import time
-from utils import Utils
-from classes import Sensor
+from modules.utils import Utils
+from modules.classes import Sensor
 import requests
 import math
-from classes import MQTTMessage
+from modules.classes import MQTTMessage
 from datetime import datetime
-from utils import Utils, Singleton
-from logg import Logg
+from modules.utils import Utils, Singleton
+from modules.logg import Logg
 import json
 
 @Singleton
