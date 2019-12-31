@@ -6,10 +6,10 @@ ENV:
   DEV:
     PORT: 8200
     ENABLE_DB: True
-    LOG_SENSOR_DATA: True
+    LOG_SENSOR_DATA: False
     MQTT_BROKER: "broker.shiftr.io"
     MQTT_PING_TOPIC: None
-    MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
+    MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#", "wsn/temp_hum/#"]
     EXT_API_LOG_INIT: False
     EXT_API:
       - ENDPOINT: "https://airapi.airly.eu/v2/measurements/point"

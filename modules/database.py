@@ -52,6 +52,20 @@ class Database:
         if not self.connected:
             self.connect()
 
+    def get_topics(self):
+        self.check_connect()
+
+        try:
+            self.cur.execute('select * from topic')
+            results = self.cur.fetchall()
+            self.conn.commit()
+            return results
+        except:
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
+            return None
+        finally:
+            self.conn.commit()
+
     def get_sensors(self):
         self.check_connect()
 

@@ -47,3 +47,13 @@ class Sensor:
         self.ts = orig.ts
         self.log_ts = orig.log_ts
         self.topic_name = orig.topic_name
+
+class MQTTTopic(object):
+    id: int = None
+    code: int = None
+    name: str = None
+    log_rate: int = None
+    def __init__(self, d=None):
+        if d is not None:
+            for key, value in d.items():
+                setattr(self, key, value)
