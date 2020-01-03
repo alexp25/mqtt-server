@@ -8,16 +8,20 @@ from datetime import datetime
 from modules.classes import MQTTMessage
 from modules.logg import Logg
 
+
 class MQTTClient:
     def __init__(self):
         # broker_address = "192.168.12.1"
         # broker_address="iot.eclipse.org" #use external broker
         # self.broker_address = "127.0.0.1"
-        self.broker_address = Constants.conf["ENV"]["MQTT_BROKER"]
+        self.broker_address = None
         self.client = None
         self.sensor_data_q = Queue()
         self.connected = False
         self.logg = Logg.instance()
+
+    def setup(self):
+        self.broker_address = Constants.conf["ENV"]["MQTT_BROKER"]
 
     def get_data_q(self):
         return self.sensor_data_q
@@ -28,7 +32,8 @@ class MQTTClient:
 
     def ping(self, data):
         if Constants.conf["ENV"]["MQTT_PING_TOPIC"] is not None:
-            self.client.publish(Constants.conf["ENV"]["MQTT_PING_TOPIC"], payload=data, qos=0, retain=False)
+            self.client.publish(
+                Constants.conf["ENV"]["MQTT_PING_TOPIC"], payload=data, qos=0, retain=False)
 
     def connect(self):
         def on_connect(client, userdata, flags, rc):
@@ -81,8 +86,8 @@ class MQTTClient:
 
         self.logg.log("creating new instance")
 
-        self.client = mqttClient.Client(client_id="pc", clean_session=True, userdata=None,
-                                   protocol=mqtt.client.MQTTv311, transport="tcp")
+        self.client = mqttClient.Client(client_id=Constants.conf["ENV"]["MQTT_CLIENT_NAME"], clean_session=True, userdata=None,
+                                        protocol=mqtt.client.MQTTv311, transport="tcp")
 
         self.client.username_pw_set("60c42070", "87bc58e655e88d7f")
         self.client.on_message = on_message  # attach function to callback
@@ -90,7 +95,8 @@ class MQTTClient:
         self.client.on_disconnect = on_disconnect
 
         self.logg.log("connecting to broker")
-        self.client.connect(self.broker_address, port=1883, keepalive=60, bind_address="")
+        self.client.connect(self.broker_address, port=1883,
+                            keepalive=60, bind_address="")
 
         self.client.loop_start()  # start the loop
 
@@ -98,5 +104,3 @@ class MQTTClient:
 
         for topic in Constants.conf["ENV"]["MQTT_SUB_TOPICS"]:
             self.client.subscribe(topic=topic, qos=0)
-
-

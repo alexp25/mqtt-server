@@ -61,7 +61,6 @@ def get_sensors():
         })
 
 
-
 @app.route("/get-sensor-data", methods=['GET'])
 def get_sensor_data():
     try:
@@ -75,6 +74,7 @@ def get_sensor_data():
         return json.dumps({
             "status": False
         })
+
 
 @app.route("/get-sensor-data-csv", methods=['GET'])
 def get_sensor_data_csv():
@@ -93,7 +93,8 @@ def get_sensor_data_csv():
         # .encode("utf-8")
         timeseries = Timeseries()
         for (i, row) in enumerate(data):
-            strIO.write((str(i+1) + "\t" + str(row["value"])  + "\t" + str(row["timestamp"]) + "\r\n").encode("utf-8"))
+            strIO.write(
+                (str(i+1) + "\t" + str(row["value"]) + "\t" + str(row["timestamp"]) + "\r\n").encode("utf-8"))
             timeseries.x.append(row["timestamp"])
             timeseries.y.append(row["value"])
         # graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
@@ -111,7 +112,8 @@ def get_sensor_data_csv():
             byte_str = strIO.read()
 
             # Convert to a "unicode" object
-            text_obj = byte_str.decode('UTF-8')  # Or use the encoding you expect
+            # Or use the encoding you expect
+            text_obj = byte_str.decode('UTF-8')
             return text_obj
     except:
         logg.log(Utils.format_exception(""))
@@ -142,7 +144,8 @@ def get_sensor_data_plot():
 
                 timeseries.append(timeseries1)
 
-            strIO = graph.plot_timeseries_multi(timeseries, "sensor " + id, "time", "value")
+            strIO = graph.plot_timeseries_multi(
+                timeseries, "sensor " + id, "time", "value")
         else:
             timeseries = Timeseries()
             timeseries.x = []
@@ -150,7 +153,8 @@ def get_sensor_data_plot():
             for (i, row) in enumerate(data):
                 timeseries.x.append(row["timestamp"])
                 timeseries.y.append(row["value"])
-            strIO = graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
+            strIO = graph.plot_timeseries(
+                timeseries, "sensor " + id + " chan " + chan, "time", "value")
 
         return strIO
         # Utils.log(strIO)
@@ -183,8 +187,9 @@ if __name__ == '__main__':
     if Constants.conf["ENV"]["ENABLE_DB"]:
         Utils.log("enable db")
         db = Database.instance()
-        # db.connect()
+        db.connect()
         mqtt_manager.load_sensors()
+        db.run_process()
 
     extapi.connect()
     extapi.start()
@@ -192,5 +197,6 @@ if __name__ == '__main__':
     port = Constants.conf["ENV"]["PORT"]
 
     Utils.log("server starting on port " + str(port))
-    server = pywsgi.WSGIServer(('0.0.0.0', port), app, handler_class=WebSocketHandler)
+    server = pywsgi.WSGIServer(
+        ('0.0.0.0', port), app, handler_class=WebSocketHandler)
     server.serve_forever()

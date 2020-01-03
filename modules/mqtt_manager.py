@@ -12,6 +12,7 @@ import datetime
 from modules.logg import Logg
 from typing import List
 from modules.classes import MQTTTopic
+import copy
 
 
 class MQTTManager(Thread):
@@ -31,6 +32,7 @@ class MQTTManager(Thread):
 
     def create_client(self):
         self.mqtt_client = MQTTClient()
+        self.mqtt_client.setup()
         self.mqtt_client.connect()
         self.sensor_data_q = self.mqtt_client.get_data_q()
 
@@ -75,8 +77,7 @@ class MQTTManager(Thread):
     def update_sensor_data(self, raw_id, d1: MQTTMessage):
         ts = time.time()
         found = False
-        s1 = Sensor()
-        s1_update = None
+        s1: Sensor = Sensor()
 
         # remove heading
         data = d1.data
@@ -88,7 +89,6 @@ class MQTTManager(Thread):
         try:
             for s in self.sensors:
                 s1 = s
-                s1_update = s
                 if s1.id == Utils.get_sensor_id_encoding(raw_id, self.get_topic_code(d1.topic)):
                     found = True
                     # self.logg.log("found / " + d1.topic + ": " + str(s1.id) + " raw id: " + str(raw_id) + " topic code: " + str(s1.topic_code))
@@ -104,15 +104,15 @@ class MQTTManager(Thread):
                 # handle sample and db log
                 if ts - s1.ts >= s1.log_rate:
                     # self.logg.log("sample")
-                    s1_update.ts = ts
+                    s1.ts = ts
                     s1.data_buffer.append(d1)
 
                 if ts - s1.log_ts >= self.default_log_rate:
                     # self.logg.log("log")
-                    s1_update.log_ts = ts
+                    s1.log_ts = ts
                     if len(s1.data_buffer) > 0:
                         self.log_sensor_data(s1)
-                        s1_update.data_buffer = []
+                        s1.data_buffer = []
             else:
                 # sensor is not defined in the db, save and use defaults
                 # assign to the topic (should be defined)
@@ -148,7 +148,7 @@ class MQTTManager(Thread):
     def log_sensor_data(self, sensor):
         s = Sensor(sensor)
         if Constants.conf["ENV"]["ENABLE_DB"]:
-            self.db.publish_sensor_data(s)
+            self.db.publish_sensor_data(copy.deepcopy(s))
 
     def run(self):
         t0 = time.time()

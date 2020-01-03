@@ -14,6 +14,7 @@ from datetime import datetime
 from modules.utils import Utils, Singleton
 from modules.logg import Logg
 import json
+from typing import List
 
 @Singleton
 class ExtApi(Thread):
@@ -29,23 +30,21 @@ class ExtApi(Thread):
         self.logstart = Constants.conf["ENV"]["EXT_API_LOG_INIT"]
         print(self.ext_apis)
         self.db = Database.instance()
-        sensors = self.db.get_sensors()
+        sensors: List[Sensor] = self.db.get_sensors()
         print(sensors)
         if sensors is not None:
             self.check_create_sensors(sensors)
-        
-        # use highest default sampling time from available sensors
-        for s in sensors:
-            if s["log_rate"] < self.default_log_rate:
-                self.default_log_rate = s["log_rate"]
+    
 
-    def check_create_sensors(self, db):
+    def check_create_sensors(self, db: List[Sensor]):
         for e in self.ext_apis:
             if e["ENABLED"]:
                 sd = e["SENSOR"]
                 exists = False
+                s: Sensor = None
                 for dbs in db:
                     if dbs["sensor_id"] == sd["FULL_ID"]:
+                        s = dbs
                         exists = True
                         break
                 if not exists:
@@ -55,6 +54,11 @@ class ExtApi(Thread):
                     self.create_sensor(s)
                 else:
                     self.logg.log("created ext sensor exists: " + str(sd["ID"]))
+                
+                if s is not None:
+                    # use highest default sampling time from available sensors
+                    if s["log_rate"] < self.default_log_rate:
+                        self.default_log_rate = s["log_rate"]
 
 
     def request_data(self):

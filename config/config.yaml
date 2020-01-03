@@ -7,7 +7,10 @@ ENV:
     PORT: 8200
     ENABLE_DB: True
     LOG_SENSOR_DATA: False
+    USE_PUBLISHER_PROCESS: True
+    USE_EXT_PUBLISHER: True
     MQTT_BROKER: "broker.shiftr.io"
+    MQTT_CLIENT_NAME: "pcdev"
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#", "wsn/temp_hum/#"]
     EXT_API_LOG_INIT: False
@@ -86,8 +89,11 @@ ENV:
   PROD:
     PORT: 8300
     ENABLE_DB: True
+    USE_PUBLISHER_PROCESS: True
+    USE_EXT_PUBLISHER: True
     LOG_SENSOR_DATA: False
     MQTT_BROKER: "broker.shiftr.io"
+    MQTT_CLIENT_NAME: "raspberry150"
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#"]
     EXT_API_LOG_INIT: False
