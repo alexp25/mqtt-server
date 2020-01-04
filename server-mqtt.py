@@ -187,7 +187,7 @@ if __name__ == '__main__':
     if Constants.conf["ENV"]["ENABLE_DB"]:
         Utils.log("enable db")
         db = Database.instance()
-        db.connect()
+        # db.connect()
         mqtt_manager.load_sensors()
         db.run_process()
 

@@ -13,6 +13,8 @@ import time
 
 from multiprocessing import Queue, Process
 
+import functools
+
 
 def PublisherProcess(q_in: Queue, q_out: Queue, conf):
 
@@ -23,22 +25,57 @@ def PublisherProcess(q_in: Queue, q_out: Queue, conf):
     password = dbconf["PASS"]
     dbname = dbconf["NAME"]
 
-    connection = pymysql.connect(
-        host=host,
-        user=user,
-        password=password,
-        database=dbname,
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    connection = None
+    cursor = None
 
-    cursor = connection.cursor()
-    print("connected to db (process)")
+    def connect():
+        connection = pymysql.connect(
+            host=host,
+            user=user,
+            password=password,
+            database=dbname,
+            cursorclass=pymysql.cursors.DictCursor
+        )
 
+        cursor = connection.cursor()
+        print("connected to db (process)")
+
+        return connection, cursor
+
+    connection, cursor = connect()
+
+    print(connection)
+    print(cursor)
     while True:
         time.sleep(0.01)
         if not q_in.empty():
             s: Sensor = q_in.get()
-            publish_sensor_data_ext(s, connection, cursor)
+
+            try:
+                publish_sensor_data_ext(s, connection, cursor)
+            except pymysql.Error as e:
+                print(e)
+                if 'MySQL server has gone away' in str(e):
+                    connection, cursor = connect()
+            except Exception as e2:
+                print(e2)
+
+
+def _check_conn(func):
+    # @functools.wraps(func)
+    def wrap(self, *args, **kwargs):
+        # print("inside wrap")
+        self.check_connect()
+        try:
+            return func(self, *args, **kwargs)
+        except pymysql.Error as e:
+            if 'MySQL server has gone away' in str(e):
+                # reconnect MySQL
+                self.connect()
+            else:
+                # No need to retry for other reasons
+                pass
+    return wrap
 
 
 @Singleton
@@ -90,12 +127,19 @@ class Database:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
 
     def check_connect(self):
+        self.logg.log("check connect")
         if not self.connected:
             self.connect()
+            # self.connection.close()
+        # else:
+        #     # 2020-01-04 08:33:01.944585: Database Error on line 133, OperationalError: (2006, "MySQL server has gone away (BrokenPipeError(32, 'Broken pipe'))")
+        #     # 2020-01-04 08:33:01.958495:  Error on line 131, InterfaceError: (0, '')
 
+        #     if not self.connection.open:
+        #         self.connection.ping(reconnect=True)
+
+    @_check_conn
     def get_topics(self):
-        self.check_connect()
-
         try:
             self.cursor.execute('select * from topic')
             results = self.cursor.fetchall()
@@ -107,9 +151,8 @@ class Database:
         finally:
             self.connection.commit()
 
+    @_check_conn
     def get_sensors(self):
-        self.check_connect()
-
         try:
             self.cursor.execute(
                 'select sensor.sensor_id, sensor.log_rate, sensor.topic_code, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_code=topic.code')
@@ -122,9 +165,8 @@ class Database:
         finally:
             self.connection.commit()
 
+    @_check_conn
     def get_sensor_data(self, id, chan, limit):
-        self.check_connect()
-
         try:
             sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
             params = (int(id), int(chan), int(limit))
@@ -140,9 +182,8 @@ class Database:
         finally:
             self.connection.commit()
 
+    @_check_conn
     def create_sensor(self, sensor):
-        self.check_connect()
-
         try:
             sdata: MQTTMessage = sensor.current_data
             # self.logg.log(sdata.__dict__)
@@ -181,55 +222,54 @@ class Database:
             except:
                 self.logg.log(Utils.format_exception(self.__class__.__name__))
 
+    @_check_conn
     def publish_sensor_data_core(self, s: Sensor):
-        sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
         self.logg.log("publish data")
-
         self.logg.log(s.__dict__)
-        publish_sensor_data_ext(s, self.connection, self.cursor)
+        try:
+            publish_sensor_data_ext(s, self.connection, self.cursor)
+        except:
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
 
     def publish_sensor_data(self, s: Sensor):
         if Constants.conf["ENV"]["USE_EXT_PUBLISHER"]:
             if not self.dbq_in.full():
                 self.dbq_in.put(s)
         else:
-            self.check_connect()
             self.publish_sensor_data_core(s)
 
 
 def publish_sensor_data_ext(s: Sensor, connection, cursor):
+
+    # if not connection.open:
+    #     connection.ping(reconnect=True)
+
     sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
     print("publish data ext")
-    try:
-        insert_list = []
 
-        for msg in s.data_buffer:
+    insert_list = []
 
-            n_data = len(msg.data)
-            r = range(0, n_data)
+    for msg in s.data_buffer:
 
-            for index in r:
-                try:
-                    data_val = int(msg.data[index])
-                    insert_list.append((s.id, index, data_val, msg.ts))
-                except:
-                    # print(Utils.format_exception("publish sensor data ext"))
-                    continue
+        n_data = len(msg.data)
+        r = range(0, n_data)
 
-        if len(insert_list) > 0:
-            # print(insert_list)
-            print(insert_list)
-            cursor.executemany(sql, insert_list)
-            # close communication with the database
-            # cursor.close()
-        else:
-            print("no data to insert: " + str(len(s.data_buffer)))
+        for index in r:
+            try:
+                data_val = int(msg.data[index])
+                insert_list.append((s.id, index, data_val, msg.ts))
+            except:
+                # print(Utils.format_exception("publish sensor data ext"))
+                continue
 
-    except:
-        print(Utils.format_exception("publish sensor data ext"))
-    finally:
-        try:
-            # commit the changes to the database
-            connection.commit()
-        except:
-            print(Utils.format_exception("publish sensor data ext"))
+    if len(insert_list) > 0:
+        # print(insert_list)
+        print(insert_list)
+        cursor.executemany(sql, insert_list)
+        # close communication with the database
+        # cursor.close()
+
+        # commit the changes to the database
+        connection.commit()
+    else:
+        print("no data to insert: " + str(len(s.data_buffer)))
