@@ -159,7 +159,7 @@ class MQTTManager(Thread):
 
                 if (t1 - t0) >= 10:
                     t0 = t1
-                    self.logg.log("self test")
+                    # self.logg.log("self test")
                     if not self.mqtt_client.connected:
                         self.logg.log("disconnect detected, reconnect")
                         try:

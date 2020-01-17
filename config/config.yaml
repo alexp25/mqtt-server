@@ -7,6 +7,7 @@ ENV:
     PORT: 8200
     ENABLE_DB: True
     LOG_SENSOR_DATA: False
+    PUBLISH_SENSOR_DATA: True
     USE_PUBLISHER_PROCESS: True
     USE_EXT_PUBLISHER: True
     MQTT_BROKER: "broker.shiftr.io"

@@ -14,6 +14,7 @@ import time
 from multiprocessing import Queue, Process
 
 import functools
+import collections
 
 
 def PublisherProcess(q_in: Queue, q_out: Queue, conf):
@@ -149,7 +150,6 @@ class Database:
         results = self.cursor.fetchall()
         self.connection.commit()
         return results
-        
 
     @_check_conn
     def get_sensors(self):
@@ -157,19 +157,25 @@ class Database:
             'select sensor.sensor_id, sensor.log_rate, sensor.topic_code, sensor.sensor_type_code, topic.name as "topic_name" from sensor inner join topic on sensor.topic_code=topic.code')
         results = self.cursor.fetchall()
         self.connection.commit()
-        return results        
+        return results
 
     @_check_conn
     def get_sensor_data(self, id, chan, limit):
-        sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
-        params = (int(id), int(chan), int(limit))
+
+        if chan is not None:
+            sql = 'select * from (select * from sensor_data where sensor_id=%s and chan=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
+            params = (int(id), int(chan), int(limit))
+        else:
+            sql = 'select * from (select * from sensor_data where sensor_id=%s order by id DESC limit %s) as data_desc order by data_desc.id ASC'
+            params = (int(id), int(limit))
+
         self.logg.log(sql)
         self.logg.log(params)
         self.cursor.execute(sql, params)
         results = self.cursor.fetchall()
         self.connection.commit()
         return results
-        
+
     @_check_conn
     def create_sensor(self, sensor):
         sdata: MQTTMessage = sensor.current_data
@@ -178,7 +184,7 @@ class Database:
             return None
 
         self.logg.log("create sensor for topic: " + sensor.topic_name +
-                        " (code " + str(sensor.topic_code) + ")")
+                      " (code " + str(sensor.topic_code) + ")")
         self.cursor.execute(
             'select * from topic where name=%s', (sensor.topic_name,))
         topic = self.cursor.fetchone()
@@ -200,13 +206,12 @@ class Database:
         # close communication with the database
         # self.cursor.close()
         return sensor
-    
+
     @_check_conn
     def publish_sensor_data_core(self, s: Sensor):
         self.logg.log("publish data")
         self.logg.log(s.__dict__)
         publish_sensor_data_ext(s, self.connection, self.cursor)
-       
 
     def publish_sensor_data(self, s: Sensor):
         if Constants.conf["ENV"]["USE_EXT_PUBLISHER"]:
@@ -216,10 +221,81 @@ class Database:
             self.publish_sensor_data_core(s)
 
 
+
+    def extract_csv_multichan(self, data):
+        try:    
+            data_dict = {}
+            for d in data:
+                key = str(d["sensor_id"]) + "/" + str(d["chan"])
+                if key in data_dict:
+                    data_dict[key].append(d)
+                else:
+                    data_dict[key] = [d]
+
+            # merge data (assume that the data is gathered at almost the same timestamps (server polling for data via mqtt at regular intervals))
+
+            od = collections.OrderedDict(sorted(data_dict.items()))
+            # print(od)
+
+            data_rows = []
+            data_cols = []
+            row_size = None
+            headers = None
+
+            for (k, v) in od.items():
+                # print(k, v)
+                # print("key: ", k)
+                if row_size is None:
+                    row_size = len(v)
+                else:
+                    if len(v) < row_size:
+                        row_size = len(v)
+
+                data_cols.append(v)
+
+            for i in range(row_size):
+                data_row = []
+                add_headers = False
+                if headers is None:
+                    add_headers = True
+                    headers = []
+                    headers.append("index")
+                    headers.append("timestamp")
+
+                data_row.append(i+1)
+                # (assume that the data is gathered at almost the same timestamps (server polling for data via mqtt at regular intervals))
+                ts = data_cols[0][i]["timestamp"]
+                if ts is None:
+                    data_row.append(ts)
+                else:
+                    data_row.append(ts)
+                    # div = 10000000.0
+                    # data_row.append(datetime.utcfromtimestamp(
+                    #     ts/div).strftime('%Y-%m-%d %H:%M:%S') + "." + str(int(((ts / div) - int(ts/div)) * 1000)))
+
+                for (j, c) in enumerate(data_cols):
+                    data_row.append(c[i]["value"])
+                    if add_headers:
+                        headers.append(
+                            "node " + str(c[i]["sensor_id"]) + " chan " + str(c[i]["chan"]))
+                data_rows.append(data_row)
+
+            data_str = ""
+            data_str += ",".join(headers) + "\n"
+            for dr in data_rows:
+                data_str += ",".join(str(dc) for dc in dr) + "\n"
+
+            return data_str
+        except:
+            self.logg.log(Utils.format_exception(self.__class__.__name__))
+            
 def publish_sensor_data_ext(s: Sensor, connection, cursor):
 
     # if not connection.open:
     #     connection.ping(reconnect=True)
+
+    if not Constants.conf["ENV"]["PUBLISH_SENSOR_DATA"]:
+        return
 
     sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
     print("publish data ext")

@@ -18,10 +18,13 @@ from modules.logg import Logg
 
 from modules.extapi import ExtApi
 
+from flask_cors import CORS
+
 # tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist')
 # static_folder = "dist"
 # app = Flask(__name__,static_folder=static_folder, template_folder=tmpl_dir)
 app = Flask(__name__)
+CORS(app)
 app.debug = False
 
 db = None
@@ -90,14 +93,8 @@ def get_sensor_data_csv():
         Utils.log(data)
         strIO = io.BytesIO()
 
-        # .encode("utf-8")
-        timeseries = Timeseries()
-        for (i, row) in enumerate(data):
-            strIO.write(
-                (str(i+1) + "\t" + str(row["value"]) + "\t" + str(row["timestamp"]) + "\r\n").encode("utf-8"))
-            timeseries.x.append(row["timestamp"])
-            timeseries.y.append(row["value"])
-        # graph.plot_timeseries(timeseries, "sensor " + id + " chan " + chan, "time", "value")
+        strdata = db.extract_csv_multichan(data)
+        strIO.write(strdata.encode("utf-8"))
 
         # strIO.write(data)
         strIO.seek(0)
@@ -114,7 +111,11 @@ def get_sensor_data_csv():
             # Convert to a "unicode" object
             # Or use the encoding you expect
             text_obj = byte_str.decode('UTF-8')
-            return text_obj
+
+            return json.dumps({
+                "status": True,
+                "data": text_obj
+            })
     except:
         logg.log(Utils.format_exception(""))
         return json.dumps({
