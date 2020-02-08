@@ -1,4 +1,7 @@
 
+from gevent import monkey
+monkey.patch_all(thread=False)
+
 from flask import Flask, request, send_file
 from gevent import pywsgi
 from geventwebsocket.handler import WebSocketHandler

@@ -14,7 +14,7 @@ ENV:
     MQTT_CLIENT_NAME: "pcdev"
     MQTT_PING_TOPIC: None
     MQTT_SUB_TOPICS: ["wsn/indoor_ws/#", "wsn/outdoor_ws/#", "wsn/temp_hum/#"]
-    EXT_API_LOG_INIT: False
+    EXT_API_LOG_INIT: True
     EXT_API:
       - ENDPOINT: "https://airapi.airly.eu/v2/measurements/point"
         ENABLED: True
@@ -57,7 +57,7 @@ ENV:
         ENABLED: True
         PARAMS:
           - KEY: "key"
-            VALUE: "kFHKw8oi3K56wzRhN"
+            VALUE: "09468ebc-bfef-4252-b8e7-2a3474717b51"
           - KEY: "lat"
             VALUE: 44.435051
           - KEY: "lon"

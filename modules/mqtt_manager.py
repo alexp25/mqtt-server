@@ -108,7 +108,7 @@ class MQTTManager(Thread):
                     s1.data_buffer.append(d1)
 
                 if ts - s1.log_ts >= self.default_log_rate:
-                    # self.logg.log("log")
+                    self.logg.log("log db")
                     s1.log_ts = ts
                     if len(s1.data_buffer) > 0:
                         self.log_sensor_data(s1)

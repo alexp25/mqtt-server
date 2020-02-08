@@ -50,9 +50,10 @@ def PublisherProcess(q_in: Queue, q_out: Queue, conf):
     while True:
         time.sleep(0.01)
         if not q_in.empty():
+            print("process publish")
             s: Sensor = q_in.get()
             try:
-                publish_sensor_data_ext(s, connection, cursor)
+                publish_sensor_data_ext(s, connection, cursor, conf)
             except pymysql.Error as e:
                 print(e)
                 if 'MySQL server has gone away' in str(e):
@@ -211,7 +212,7 @@ class Database:
     def publish_sensor_data_core(self, s: Sensor):
         self.logg.log("publish data")
         self.logg.log(s.__dict__)
-        publish_sensor_data_ext(s, self.connection, self.cursor)
+        publish_sensor_data_ext(s, self.connection, self.cursor, Constants.conf)
 
     def publish_sensor_data(self, s: Sensor):
         if Constants.conf["ENV"]["USE_EXT_PUBLISHER"]:
@@ -219,8 +220,6 @@ class Database:
                 self.dbq_in.put(s)
         else:
             self.publish_sensor_data_core(s)
-
-
 
     def extract_csv_multichan(self, data):
         try:    
@@ -289,15 +288,19 @@ class Database:
         except:
             self.logg.log(Utils.format_exception(self.__class__.__name__))
             
-def publish_sensor_data_ext(s: Sensor, connection, cursor):
+def publish_sensor_data_ext(s: Sensor, connection, cursor, conf):
 
     # if not connection.open:
     #     connection.ping(reconnect=True)
 
-    if not Constants.conf["ENV"]["PUBLISH_SENSOR_DATA"]:
+    print("publish ext")
+
+    if not conf["ENV"]["PUBLISH_SENSOR_DATA"]:
+        print("publish disabled")
         return
 
     sql = "INSERT INTO sensor_data(sensor_id, chan, value, timestamp) VALUES(%s, %s, %s, %s)"
+
     print("publish data ext")
 
     insert_list = []

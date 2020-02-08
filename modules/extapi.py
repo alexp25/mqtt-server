@@ -80,11 +80,18 @@ class ExtApi(Thread):
                 # sending get request and saving the response as response object
                 r = requests.get(url=URL, params=PARAMS, headers=HEADERS)
 
+                if r.status_code != 200:
+                    self.logg.log("request failed with status code: " + str(r.status_code))
+                    # extracting data in json format
+                    data = r.json()
+                    self.logg.log(json.dumps(data))
+                    continue
+
                 # extracting data in json format
                 data = r.json()
 
                 # print(data)
-                self.logg.log(json.dumps(data))
+                # self.logg.log(json.dumps(data))
 
                 out = []
                 for o in e["OUTPUT"]:
@@ -111,7 +118,7 @@ class ExtApi(Thread):
                             d = math.floor(d)
                         out.append(d)
 
-                self.logg.log(out)
+                # self.logg.log(out)
 
                 sd = e["SENSOR"]
                 s = self.create_sensor_model(sd["FULL_ID"], sd["TYPE"], sd["LOG_RATE"], sd["TOPIC"], None)
