@@ -63,15 +63,30 @@ class MQTTClient:
                 topic_elems = message.topic.split("/")
                 n_topic_elems = len(topic_elems)
 
-                msg.data = raw_data.split(",")
+                raw_data_split = raw_data.split(",")
 
-                msg.topic = "/".join(topic_elems[0:n_topic_elems-2])
+                # msg.topic = "/".join(topic_elems[0:n_topic_elems-2])
+                msg.topic = "/".join(topic_elems)
+
                 # self.logg.log(msg.topic)
 
                 # the last-1 item is the sensor id
                 # the last item is the input/output selector (cmd, sns)
 
-                msg.id = int(topic_elems[n_topic_elems-2])
+                # msg.id = int(topic_elems[n_topic_elems-2])
+
+                # extract sensor id, remove from data array for further processing
+                msg.id = int(raw_data_split[0])
+
+                # if len(raw_data_split) == 1:
+                #     msg.data = None
+                # elif len(raw_data_split) == 2:
+                #     msg.data = raw_data_split[1]
+                # else:
+                #     msg.data = ",".join(raw_data_split[1:])
+
+                msg.data = raw_data_split[1:]
+
                 msg.ts = datetime.now()
                 # fixed type at the moment
                 msg.type = 1
@@ -89,13 +104,13 @@ class MQTTClient:
         self.client = mqttClient.Client(client_id=Constants.conf["ENV"]["MQTT_CLIENT_NAME"], clean_session=True, userdata=None,
                                         protocol=mqtt.client.MQTTv311, transport="tcp")
 
-        self.client.username_pw_set("60c42070", "87bc58e655e88d7f")
+        self.client.username_pw_set(Constants.conf["ENV"]["MQTT_USER"], Constants.conf["ENV"]["MQTT_PASS"])
         self.client.on_message = on_message  # attach function to callback
         self.client.on_connect = on_connect
         self.client.on_disconnect = on_disconnect
 
         self.logg.log("connecting to broker")
-        self.client.connect(self.broker_address, port=1883,
+        self.client.connect(self.broker_address, port=Constants.conf["ENV"]["MQTT_PORT"],
                             keepalive=60, bind_address="")
 
         self.client.loop_start()  # start the loop

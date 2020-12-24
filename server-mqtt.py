@@ -1,6 +1,10 @@
 
 from gevent import monkey
-monkey.patch_all(thread=False)
+
+# this breaks db connection
+# monkey.patch_all(thread=False)
+
+monkey.patch_time()
 
 from flask import Flask, request, send_file
 from gevent import pywsgi

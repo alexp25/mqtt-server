@@ -24,8 +24,8 @@ class MQTTManager(Thread):
 
         self.topics: List[MQTTTopic] = []
 
-        # the actual write to db sampling time
-        self.default_log_rate = 20
+        # the actual write to db sampling time (seconds)
+        self.default_log_rate = Constants.conf["ENV"]["DB_LOG_RATE"]
         # the sampling time of the sensor (it may send data faster than this, so just ignore the data in between)
         self.default_min_sampling_rate = 10
         self.logg = Logg.instance()
@@ -79,6 +79,9 @@ class MQTTManager(Thread):
         found = False
         s1: Sensor = Sensor()
 
+        if d1.data is None:
+            return
+            
         # remove heading
         data = d1.data
         if d1.data[0] == "data":
@@ -110,6 +113,7 @@ class MQTTManager(Thread):
                 if ts - s1.log_ts >= self.default_log_rate:
                     self.logg.log("log db")
                     s1.log_ts = ts
+                    # check if data in buffer
                     if len(s1.data_buffer) > 0:
                         self.log_sensor_data(s1)
                         s1.data_buffer = []
@@ -135,7 +139,7 @@ class MQTTManager(Thread):
                     self.sensors.append(s1)
 
         except:
-            self.logg.log(Utils.format_exception(self.__class__.__name__))
+            self.logg.log(Utils.format_exception(self.__class__.__name__) + " at message: " + str(d1.__dict__))
 
         # self.logg.log(self.sensors)
 

@@ -11,6 +11,14 @@ class Constants:
                 conf = yaml.load(stream)
                 print(conf)
                 Constants.conf = conf
-                Constants.conf["ENV"] = Constants.conf["ENV"][Constants.conf["ENV_NAME"]]
             except yaml.YAMLError as exc:
                 print(exc)
+        
+        with open("config/" + Constants.conf["ENV"][Constants.conf["ENV_NAME"]], "r") as stream:
+            try:
+                conf = yaml.load(stream)
+                print(conf)
+                Constants.conf["ENV"] = conf
+            except yaml.YAMLError as exc:
+                print(exc)
+            

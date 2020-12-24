@@ -62,6 +62,8 @@ class ExtApi(Thread):
 
 
     def request_data(self):
+        if not Constants.conf["ENV"]["EXT_API_ENABLED"]:
+            return
         for e in self.ext_apis:
             if e["ENABLED"]:
                 # api-endpoint
