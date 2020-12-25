@@ -15,6 +15,7 @@ from multiprocessing import Queue, Process
 
 import functools
 import collections
+from datetime import datetime
 
 
 def PublisherProcess(q_in: Queue, q_out: Queue, conf):
@@ -194,12 +195,14 @@ class Database:
         # self.logg.log(topic["id"])
         sensor.id = Utils.get_sensor_id_encoding(
             sensor.raw_id, topic["code"])
-        sql = "INSERT INTO sensor (sensor_id, log_rate, topic_code) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO sensor (sensor_id, log_rate, topic_code, timestamp) VALUES (%s, %s, %s)"
         sensor.log_rate = topic["log_rate"]
         sensor.topic_code = topic["code"]
 
+        ts = datetime.now()
+
         self.logg.log("sensor: " + str(sensor.__dict__))
-        params = (sensor.id, sensor.log_rate, topic["code"])
+        params = (sensor.id, sensor.log_rate, topic["code"], ts)
         self.logg.log(sql + str(params))
         self.cursor.execute(sql, params)
         # commit the changes to the database

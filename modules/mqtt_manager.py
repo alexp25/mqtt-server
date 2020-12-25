@@ -105,11 +105,14 @@ class MQTTManager(Thread):
                 s1.current_data = data
 
                 # handle sample and db log
-                if ts - s1.ts >= s1.log_rate:
+                # only add to data buffer if enough time has passed since last recorded message
+                # ts = 0 => log all incoming messages
+                if (s1.ts == 0) or (ts - s1.ts >= s1.log_rate):
                     # self.logg.log("sample")
                     s1.ts = ts
                     s1.data_buffer.append(d1)
 
+                # handle dump to db
                 if ts - s1.log_ts >= self.default_log_rate:
                     self.logg.log("log db")
                     s1.log_ts = ts
@@ -131,9 +134,7 @@ class MQTTManager(Thread):
 
                 # write to db
                 s1 = self.create_sensor(s1)
-
                 # topic code is now assigned
-
                 if s1 is not None:
                     self.logg.log("new sensor: " + str(s1.__dict__))
                     self.sensors.append(s1)
