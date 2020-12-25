@@ -135,9 +135,10 @@ class MQTTManager(Thread):
                 # write to db
                 s1 = self.create_sensor(s1)
                 # topic code is now assigned
-                if s1 is not None:
-                    self.logg.log("new sensor: " + str(s1.__dict__))
-                    self.sensors.append(s1)
+                # if s1 is not None:
+                # add to list anyways (the sensor may already be registered and db returns error)
+                self.logg.log("new sensor: " + str(s1.__dict__))
+                self.sensors.append(s1)
 
         except:
             self.logg.log(Utils.format_exception(self.__class__.__name__) + " at message: " + str(d1.__dict__))
@@ -153,6 +154,7 @@ class MQTTManager(Thread):
     def log_sensor_data(self, sensor):
         s = Sensor(sensor)
         if Constants.conf["ENV"]["ENABLE_DB"]:
+            # TODO: if error, remove sensor from list (maybe it was removed from the db)
             self.db.publish_sensor_data(copy.deepcopy(s))
 
     def run(self):

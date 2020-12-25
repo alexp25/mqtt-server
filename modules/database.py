@@ -195,7 +195,7 @@ class Database:
         # self.logg.log(topic["id"])
         sensor.id = Utils.get_sensor_id_encoding(
             sensor.raw_id, topic["code"])
-        sql = "INSERT INTO sensor (sensor_id, log_rate, topic_code, timestamp) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO sensor (sensor_id, log_rate, topic_code, timestamp) VALUES (%s, %s, %s, %s)"
         sensor.log_rate = topic["log_rate"]
         sensor.topic_code = topic["code"]
 
