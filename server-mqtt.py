@@ -119,10 +119,11 @@ def get_sensor_data_csv():
             # Or use the encoding you expect
             text_obj = byte_str.decode('UTF-8')
 
-            return json.dumps({
-                "status": True,
-                "data": text_obj
-            })
+            # return json.dumps({
+            #     "status": True,
+            #     "data": text_obj
+            # })
+            return text_obj
     except:
         logg.log(Utils.format_exception(""))
         return json.dumps({
